@@ -17,7 +17,6 @@ namespace Components {
 	auto Rom<Storage>::load_rom(const std::filesystem::path &path) -> bool {
 
 	  std::ifstream rom(path, std::ios::binary | std::ios::ate);
-	  // Maybe should throw but idk
 	  if (!rom)
 		return false;
 

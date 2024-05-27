@@ -15,6 +15,10 @@ namespace Components {
 	  std::string exception_msg_;
 	};
 
+    /**
+    * Rom is a utility to load data from some binary file and store it
+    * in an underlying vector
+    **/
 	template<typename Storage>
 	class Rom {
 	public:
