@@ -3,7 +3,7 @@
 #include <vector>
 
 int main() {
-    constexpr std::string example = std::string("a,b,c,d,e");
+    constexpr std::string example = "a,b,c,d,e";
     constexpr std::vector<std::string_view> delim = strSplit(example, ",");
     return delim.size() > 1;
 }
