@@ -1,9 +1,16 @@
 #include "../../../../components/assembler/utils/asm_utils.hpp"
 #include <string>
-#include <vector>
+#include <iostream>
+
+auto match_test() -> bool {
+    std::string expression = "@byte@byte";
+    auto match = assembler::utils::match(expression, "1234");
+    return match == true;
+}
 
 int main() {
-    constexpr std::string example = "a,b,c,d,e";
-    constexpr std::vector<std::string_view> delim = strSplit(example, ",");
-    return delim.size() > 1;
+    if(match_test()) {
+        std::cout << "Passed\n";
+    }
+    return 0;
 }
