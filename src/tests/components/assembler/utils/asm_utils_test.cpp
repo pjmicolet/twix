@@ -1,16 +1,10 @@
 #include "../../../../components/assembler/utils/asm_utils.hpp"
+#include "../../../framework/testing.hpp"
 #include <string>
 #include <iostream>
 
-auto match_test() -> bool {
+TEST_CASE("match_test") {
     std::string expression = "@byte@byte";
     auto match = assembler::utils::match(expression, "1234");
-    return match == true;
-}
-
-int main() {
-    if(match_test()) {
-        std::cout << "Passed\n";
-    }
-    return 0;
+    std::cout << "Check\n";
 }
