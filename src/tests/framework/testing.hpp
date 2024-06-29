@@ -8,6 +8,8 @@
 #define GEN_CLASS_NAME2(name, line) GEN_CLASS_NAME3(name, line)
 #define GEN_CLASS_NAME(name) GEN_CLASS_NAME2(name, __LINE__)
 
+#define GEN_INSTANCE(name) name ## Instance
+
 struct TestCase;
 
 struct TestCase {
@@ -17,7 +19,7 @@ struct TestCase {
     auto report() {
         std::cout << "Running... " << name_ << "...\n";
         run();
-        std::cout << "Finished running" << name_ << "\n";
+        std::cout << "Finished running " << name_ << "\n";
     };
     const std::string name_;
 };
@@ -32,7 +34,7 @@ struct FUNCNAME : public TestCase {\
     };\
     auto run() -> void override;\
 };\
-static FUNCNAME a{};\
+static FUNCNAME GEN_INSTANCE(FUNCNAME){};\
 void FUNCNAME::run()\
 
 #define TEST_CASE(name) GEN_TEST(GEN_CLASS_NAME(FUNC_NAME),name)

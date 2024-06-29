@@ -6,5 +6,4 @@
 TEST_CASE("match_test") {
     std::string expression = "@byte@byte";
     auto match = assembler::utils::match(expression, "1234");
-    std::cout << "Check\n";
 }
