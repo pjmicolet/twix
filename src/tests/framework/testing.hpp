@@ -1,7 +1,10 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <memory>
 #include <iostream>
+#include "assertions.hpp"
+#include "result_format.hpp"
 
 #define FUNC_NAME TestCase
 #define GEN_CLASS_NAME3(name, line) name ## line
@@ -17,9 +20,8 @@ struct TestCase {
     };
     virtual auto run() -> void = 0;
     auto report() {
-        std::cout << "Running... " << name_ << "...\n";
+        std::cout << "Running " << name_ << "...\n";
         run();
-        std::cout << "Finished running " << name_ << "\n";
     };
     const std::string name_;
 };
@@ -40,7 +42,19 @@ void FUNCNAME::run()\
 #define TEST_CASE(name) GEN_TEST(GEN_CLASS_NAME(FUNC_NAME),name)
 
 int main() {
+    std::vector<std::unique_ptr<Test::Format::Result>> results;
     for(const auto& tCase : cases) {
-        tCase->report();
+        try {
+            tCase->report();
+        } catch(const TestException& e ) {
+            results.emplace_back(static_cast<std::unique_ptr<Test::Format::Result>>(std::make_unique<Test::Format::Failed>(tCase->name_, e.what())));
+            continue;
+        }
+        results.emplace_back(static_cast<std::unique_ptr<Test::Format::Result>>(std::make_unique<Test::Format::Passed>(tCase->name_)));
+    }
+
+    const std::string indent = "    ";
+    for(const auto& result : results) {
+        std::cout << indent << result->to_string() << "\n";
     }
 }
