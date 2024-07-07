@@ -1,4 +1,4 @@
-#include "components/assembler/utils/asm_utils.hpp"
+#include <assembler/utils/asm_utils.hpp>
 #include <string>
 #include <string_view>
 #include <cstdint>
@@ -6,7 +6,7 @@
 namespace assembler {
     namespace mos6502 {
         struct OpType {
-            constexpr Operation(const uint8_t opType, const uint8_t opCode, std::string_view& opPattern) : val_(val),
+            constexpr OpType(const uint8_t opType, const uint8_t opCode, std::string_view& opPattern) : 
                 code_(opCode), opPattern_(opPattern){}
             private:
                 uint8_t type_;
@@ -46,6 +46,10 @@ namespace assembler {
 
 
         struct mos6502Assembler {
+			using byte_type = char;
+			auto assemble(const std::vector<std::string>& source) -> std::vector<byte_type>;
+			private:
+				auto assemble(const std::string& inst, std::vector<byte_type>& result) -> void;
         };
 
         struct mos6502Disassembler {
