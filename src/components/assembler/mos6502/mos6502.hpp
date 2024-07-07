@@ -44,5 +44,11 @@ namespace assembler {
         #define IND Operation(11, opCode, OpTypeEncoding::indirect);
         #define REL Operation(12, opCode, OpTypeEncoding::relative);
 
+
+        struct mos6502Assembler {
+        };
+
+        struct mos6502Disassembler {
+        };
     };
 };
