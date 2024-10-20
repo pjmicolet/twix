@@ -40,7 +40,21 @@ TEST_CASE("Basic 6502 Assembly") {
   data = assembler.assemble(listing);
 
   REQUIRE_SAME(3, data.size());
-  REQUIRE_SAME(0x78, data[0]);
+  REQUIRE_SAME(0x79, data[0]);
   REQUIRE_SAME(0x88, data[1]);
   REQUIRE_SAME(0x99, data[2]);
+
+  RESET(listing, "ADC ($FA,X)")
+  data = assembler.assemble(listing);
+
+  REQUIRE_SAME(2, data.size());
+  REQUIRE_SAME(0x61, data[0]);
+  REQUIRE_SAME(0xFA, data[1]);
+
+  RESET(listing, "ADC ($32),Y")
+  data = assembler.assemble(listing);
+
+  REQUIRE_SAME(2, data.size());
+  REQUIRE_SAME(0x71, data[0]);
+  REQUIRE_SAME(0x32, data[1]);
 }

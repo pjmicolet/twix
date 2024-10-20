@@ -53,99 +53,45 @@ struct OpTypeEncoding {
   static inline constexpr std::string_view indirectY = "($@byte),Y";
 };
 
+#define SINGLE_BYTE_PARSE                                                      \
+  [](std::string_view v, std::vector<byte_type> &data) {                       \
+    auto val = static_cast<byte_type>(utils::stringToInt(v));                  \
+    data.push_back(val);                                                       \
+  }
+
+#define DOUBLE_BYTE_PARSE                                                      \
+  [](std::string_view v, std::vector<byte_type> &data) {                       \
+    auto val = utils::stringToInt(v);                                          \
+    data.push_back(static_cast<byte_type>(val & 0xFF));                        \
+    data.push_back(static_cast<byte_type>((val & 0xFF00) >> 8));               \
+  }
+
 #define IMPL(opCode)                                                           \
   OpType { 0, opCode, OpTypeEncoding::implicit, }
 #define ACC(opCode)                                                            \
   OpType { 1, opCode, OpTypeEncoding::accumulator, }
 #define IMM(opCode)                                                            \
-  OpType {                                                                     \
-    2, opCode, OpTypeEncoding::immediate,                                      \
-        [](std::string_view v, std::vector<byte_type> &data) {                 \
-          auto val = static_cast<byte_type>(utils::stringToInt(v));            \
-          data.push_back(val);                                                 \
-        }                                                                      \
-  }
+  OpType { 2, opCode, OpTypeEncoding::immediate, SINGLE_BYTE_PARSE }
 #define ZP(opCode)                                                             \
-  OpType {                                                                     \
-    3, opCode, OpTypeEncoding::zeroPage,                                       \
-        [](std::string_view v, std::vector<byte_type> &data) {                 \
-          auto val = static_cast<byte_type>(utils::stringToInt(v));            \
-          data.push_back(val);                                                 \
-        }                                                                      \
-  }
+  OpType { 3, opCode, OpTypeEncoding::zeroPage, SINGLE_BYTE_PARSE }
 #define ZPX(opCode)                                                            \
-  OpType {                                                                     \
-    4, opCode, OpTypeEncoding::zeroPageX,                                      \
-        [](std::string_view v, std::vector<byte_type> &data) {                 \
-          auto val = static_cast<byte_type>(utils::stringToInt(v));            \
-          data.push_back(val);                                                 \
-        }                                                                      \
-  }
+  OpType { 4, opCode, OpTypeEncoding::zeroPageX, SINGLE_BYTE_PARSE }
 #define ZPY(opCode)                                                            \
-  OpType {                                                                     \
-    5, opCode, OpTypeEncoding::zeroPageY,                                      \
-        [](std::string_view v, std::vector<byte_type> &data) {                 \
-          auto val = static_cast<byte_type>(utils::stringToInt(v));            \
-          data.push_back(val);                                                 \
-        }                                                                      \
-  }
+  OpType { 5, opCode, OpTypeEncoding::zeroPageY, SINGLE_BYTE_PARSE }
 #define IZX(opCode)                                                            \
-  OpType {                                                                     \
-    6, opCode, OpTypeEncoding::indirectX,                                      \
-        [](std::string_view v, std::vector<byte_type> &data) {                 \
-          auto val = static_cast<byte_type>(utils::stringToInt(v));            \
-          data.push_back(val);                                                 \
-        }                                                                      \
-  }
+  OpType { 6, opCode, OpTypeEncoding::indirectX, SINGLE_BYTE_PARSE }
 #define IZY(opCode)                                                            \
-  OpType {                                                                     \
-    7, opCode, OpTypeEncoding::indirectY,                                      \
-        [](std::string_view v, std::vector<byte_type> &data) {                 \
-          auto val = static_cast<byte_type>(utils::stringToInt(v));            \
-          data.push_back(val);                                                 \
-        }                                                                      \
-  }
+  OpType { 7, opCode, OpTypeEncoding::indirectY, SINGLE_BYTE_PARSE }
 #define ABS(opCode)                                                            \
-  OpType {                                                                     \
-    8, opCode, OpTypeEncoding::absolute,                                       \
-        [](std::string_view v, std::vector<byte_type> &data) {                 \
-          auto val = utils::stringToInt(v);                                    \
-          data.push_back(static_cast<byte_type>(val & 0xFF));                  \
-          data.push_back(static_cast<byte_type>((val & 0xFF00) >> 8));         \
-        }                                                                      \
-  }
+  OpType { 8, opCode, OpTypeEncoding::absolute, DOUBLE_BYTE_PARSE }
 #define ABX(opCode)                                                            \
-  OpType {                                                                     \
-    9, opCode, OpTypeEncoding::absoluteX,                                      \
-        [](std::string_view v, std::vector<byte_type> &data) {                 \
-          auto val = utils::stringToInt(v);                                    \
-          data.push_back(static_cast<byte_type>(val & 0xFF));                  \
-          data.push_back(static_cast<byte_type>((val & 0xFF00) >> 8));         \
-        }                                                                      \
-  }
+  OpType { 9, opCode, OpTypeEncoding::absoluteX, DOUBLE_BYTE_PARSE }
 #define ABY(opCode)                                                            \
-  OpType {                                                                     \
-    10, opCode, OpTypeEncoding::absoluteY,                                     \
-        [](std::string_view v, std::vector<byte_type> &data) {                 \
-          auto val = utils::stringToInt(v);                                    \
-          data.push_back(static_cast<byte_type>(val & 0xFF));                  \
-          data.push_back(static_cast<byte_type>((val & 0xFF00) >> 8));         \
-        }                                                                      \
-  }
+  OpType { 10, opCode, OpTypeEncoding::absoluteY, DOUBLE_BYTE_PARSE }
 #define IND(opCode)                                                            \
-  OpType {                                                                     \
-    11, opCode, OpTypeEncoding::indirect,                                      \
-        [](std::string_view v, std::vector<byte_type> &data) {                 \
-          auto val = utils::stringToInt(v);                                    \
-          data.push_back(static_cast<byte_type>(val & 0xFF));                  \
-          data.push_back(static_cast<byte_type>((val & 0xFF00) >> 8));         \
-        }                                                                      \
-  }
+  OpType { 11, opCode, OpTypeEncoding::indirect, DOUBLE_BYTE_PARSE }
 #define REL(opCode)                                                            \
-  OpType {                                                                     \
-    12, opCode, OpTypeEncoding::relative,                                      \
-        [](std::string_view, std::vector<byte_type> &) {}                      \
-  }
+  OpType { 12, opCode, OpTypeEncoding::relative }
 
 struct Inst {
   Inst(std::string name, std::vector<OpType> types)
@@ -176,6 +122,65 @@ private:
       INSTRUCTION("AND", IMM(0x29), ZP(0x25), ZPX(0x35), ABS(0x2D), ABX(0x3D),
                   ABY(0x39), IZX(0x21), IZY(0x21)),
       INSTRUCTION("ASL", ACC(0x0A), ZP(0x06), ZPX(0x16), ABS(0x0E), ABX(0x1E)),
+      INSTRUCTION("BCC", REL(0x90)),
+      INSTRUCTION("BCS", REL(0xB0)),
+      INSTRUCTION("BEQ", REL(0xF0)),
+      INSTRUCTION("BIT", ZP(0x24), ABS(0x2C)),
+      INSTRUCTION("BMI", REL(0x30)),
+      INSTRUCTION("BNE", REL(0xD0)),
+      INSTRUCTION("BPL", REL(0x10)),
+      INSTRUCTION("BRK", IMPL(0x00)),
+      INSTRUCTION("BVC", REL(0x50)),
+      INSTRUCTION("BVS", REL(0x70)),
+      INSTRUCTION("CLC", IMPL(0x18)),
+      INSTRUCTION("CLD", IMPL(0xD8)),
+      INSTRUCTION("CLI", IMPL(0x58)),
+      INSTRUCTION("CLV", IMPL(0xB8)),
+      INSTRUCTION("CMP", IMM(0xC9), ZP(0xC5), ZPX(0xD5), ABS(0xCD), ABX(0xDD),
+                  ABY(0xD9), IZX(0xC1), IZY(0xD1)),
+      INSTRUCTION("CPX", IMM(0xE0), ZP(0xE4), ABS(0xEC)),
+      INSTRUCTION("CPY", IMM(0xC0), ZP(0xC4), ABS(0xCC)),
+      INSTRUCTION("DEC", ZP(0xC6), ZPX(0xD6), ABS(0xCE), ABX(0xDE)),
+      INSTRUCTION("DEX", IMPL(0xCA)),
+      INSTRUCTION("DEY", IMPL(0x88)),
+      INSTRUCTION("EOR", IMM(0x49), ZP(0x45), ZPX(0x55), ABS(0x4D), ABX(0x5D),
+                  ABY(0x59), IZX(0x41), IZY(0x51)),
+      INSTRUCTION("INC", ZP(0xE6), ZPX(0xF6), ABS(0xEE), ABX(0xFE)),
+      INSTRUCTION("INX", IMPL(0xE8)),
+      INSTRUCTION("INY", IMPL(0xC8)),
+      INSTRUCTION("JMP", ABS(0x4C), IND(0x6C)),
+      INSTRUCTION("JSR", ABS(0x20)),
+      INSTRUCTION("LDA", IMM(0xA9), ZP(0xA5), ZPX(0xB5), ABS(0xAD), ABX(0xBD),
+                  ABY(0xB9), IZX(0xA1), IZY(0xA1)),
+      INSTRUCTION("LDX", IMM(0xA2), ZP(0xA6), ZPX(0xB6), ABS(0xAE), ABY(0xBE)),
+      INSTRUCTION("LDY", IMM(0xA0), ZP(0xA4), ZPX(0xB4), ABS(0xBE), ABX(0xBC)),
+      INSTRUCTION("LSR", ACC(0x4A), ZP(0x46), ZPX(0x56), ABS(0x4E), ABX(0x5E)),
+      INSTRUCTION("NOP", IMPL(0xEA)),
+      INSTRUCTION("ORA", IMM(0x09), ZP(0x05), ZPX(0x15), ABS(0x0D), ABX(0x1D),
+                  ABY(0x19), IZX(0x01), IZY(0x11)),
+      INSTRUCTION("PHA", IMPL(0x48)),
+      INSTRUCTION("PHP", IMPL(0x08)),
+      INSTRUCTION("PLA", IMPL(0x68)),
+      INSTRUCTION("PLP", IMPL(0x28)),
+      INSTRUCTION("ROL", ACC(0x2A), ZP(0x26), ZPX(0x36), ABS(0x2E), ABX(0x3E)),
+      INSTRUCTION("ROR", ACC(0x6A), ZP(0x66), ZPX(0x76), ABS(0x6E), ABX(0x7E)),
+      INSTRUCTION("RTI", IMPL(0x40)),
+      INSTRUCTION("RTS", IMPL(0x60)),
+      INSTRUCTION("SBC", IMM(0xE9), ZP(0xE5), ZPX(0xF5), ABS(0xED), ABX(0xFD),
+                  ABY(0xF9), IZX(0xE1), IZY(0xF1)),
+      INSTRUCTION("SEC", IMPL(0x38)),
+      INSTRUCTION("SED", IMPL(0xF8)),
+      INSTRUCTION("SEI", IMPL(0x78)),
+      INSTRUCTION("STA", ZP(0x85), ZPX(0x95), ABS(0x8D), ABX(0x9D),
+                  ABY(0x99), IZX(0x81), IZY(0x91)),
+      INSTRUCTION("STX", ZP(0x86), ZPY(0x96), ABS(0x8E)),
+      INSTRUCTION("STY", ZP(0x84), ZPX(0x94), ABS(0x8C)),
+      INSTRUCTION("TAX", IMPL(0xAA)),
+      INSTRUCTION("TAY", IMPL(0xA8)),
+      INSTRUCTION("TSX", IMPL(0xBA)),
+      INSTRUCTION("TXA", IMPL(0x8A)),
+      INSTRUCTION("TXS", IMPL(0x9A)),
+      INSTRUCTION("TYA", IMPL(0x98)),
   };
 };
 
