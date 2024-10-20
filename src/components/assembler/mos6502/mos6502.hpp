@@ -9,15 +9,13 @@
 namespace assembler {
 namespace mos6502 {
 using byte_type = unsigned char;
-using ParseFunc =
-    std::function<void(std::string_view op, std::vector<byte_type> &)>;
+
+enum ParseType { NONE, SINGLE, DOUBLE };
 
 struct OpType {
-  constexpr OpType(
-      const uint8_t opType, const uint8_t opCode,
-      const std::string_view &opPattern,
-      const ParseFunc f = [](std::string_view, std::vector<byte_type> &) {})
-      : type_(opType), code_(opCode), opPattern_(opPattern), parseFunc_{f} {}
+  constexpr OpType(const uint8_t opType, const uint8_t opCode,
+                   const std::string_view &opPattern, const ParseType f = NONE)
+      : type_(opType), code_(opCode), opPattern_(opPattern), parseType_{f} {}
 
   auto getType() -> char { return code_; }
 
@@ -27,14 +25,38 @@ struct OpType {
 
   auto parse(std::string_view &op, std::vector<byte_type> &data) -> void {
     data.push_back(getType());
-    parseFunc_(op, data);
+    switch (parseType_) {
+    case ParseType::SINGLE: {
+      parseOne(op, data);
+      break;
+    }
+    case ParseType::DOUBLE: {
+      parseTwo(op, data);
+      break;
+    }
+    case ParseType::NONE: {
+      break;
+    }
+    }
   }
 
 private:
   uint8_t type_;
   uint8_t code_;
   const std::string_view &opPattern_;
-  ParseFunc parseFunc_;
+  const ParseType parseType_;
+
+
+  auto parseOne(std::string_view &op, std::vector<byte_type> &data) -> void {
+    auto val = static_cast<byte_type>(utils::stringToInt(op));
+    data.push_back(val);
+  }
+
+  auto parseTwo(std::string_view &op, std::vector<byte_type> &data) -> void {
+    auto val = utils::stringToInt(op);
+    data.push_back(static_cast<byte_type>(val & 0xFF));
+    data.push_back(static_cast<byte_type>((val & 0xFF00) >> 8));
+  }
 };
 
 struct OpTypeEncoding {
@@ -53,18 +75,9 @@ struct OpTypeEncoding {
   static inline constexpr std::string_view indirectY = "($@byte),Y";
 };
 
-#define SINGLE_BYTE_PARSE                                                      \
-  [](std::string_view v, std::vector<byte_type> &data) {                       \
-    auto val = static_cast<byte_type>(utils::stringToInt(v));                  \
-    data.push_back(val);                                                       \
-  }
+#define SINGLE_BYTE_PARSE ParseType::SINGLE
 
-#define DOUBLE_BYTE_PARSE                                                      \
-  [](std::string_view v, std::vector<byte_type> &data) {                       \
-    auto val = utils::stringToInt(v);                                          \
-    data.push_back(static_cast<byte_type>(val & 0xFF));                        \
-    data.push_back(static_cast<byte_type>((val & 0xFF00) >> 8));               \
-  }
+#define DOUBLE_BYTE_PARSE ParseType::DOUBLE
 
 #define IMPL(opCode)                                                           \
   OpType { 0, opCode, OpTypeEncoding::implicit, }
@@ -171,8 +184,8 @@ private:
       INSTRUCTION("SEC", IMPL(0x38)),
       INSTRUCTION("SED", IMPL(0xF8)),
       INSTRUCTION("SEI", IMPL(0x78)),
-      INSTRUCTION("STA", ZP(0x85), ZPX(0x95), ABS(0x8D), ABX(0x9D),
-                  ABY(0x99), IZX(0x81), IZY(0x91)),
+      INSTRUCTION("STA", ZP(0x85), ZPX(0x95), ABS(0x8D), ABX(0x9D), ABY(0x99),
+                  IZX(0x81), IZY(0x91)),
       INSTRUCTION("STX", ZP(0x86), ZPY(0x96), ABS(0x8E)),
       INSTRUCTION("STY", ZP(0x84), ZPX(0x94), ABS(0x8C)),
       INSTRUCTION("TAX", IMPL(0xAA)),
