@@ -1,2 +1,5 @@
-#add_executable(mos6502_test_suite assembler.cpp)
-#target_link_libraries(Test mos6502)
+add_executable(mos6502_test_suite assembler.cpp)
+
+target_link_libraries(mos6502_test_suite PUBLIC
+test_framework
+mos6502)
