@@ -24,9 +24,24 @@ template <typename T, typename R>
 inline auto require_same(const int line, const T &expected, const R &got)
     -> void {
   if (expected != got) {
+    std::string expectedS;
+    std::string gotS;
+
+    if constexpr(std::is_integral<T>::value) {
+      expectedS = std::to_string(expected);
+    } else {
+      expectedS = std::string(expected);
+    }
+
+    if constexpr(std::is_integral<R>::value) {
+      gotS = std::to_string(got);
+    } else {
+      gotS = std::string(got);
+    }
+
     std::string issue = ": Items do not match, expected=  \"" +
-                        std::to_string(expected) + "\" got \"" +
-                        std::to_string(got) +"\"";
+                        expectedS + "\" got \"" +
+                        gotS +"\"";
     throw TestException(issue);
   }
 };

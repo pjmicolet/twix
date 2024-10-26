@@ -9,7 +9,7 @@
 #define FUNC_NAME TestCase
 #define GEN_CLASS_NAME3(name, line) name ## line
 #define GEN_CLASS_NAME2(name, line) GEN_CLASS_NAME3(name, line)
-#define GEN_CLASS_NAME(name) GEN_CLASS_NAME2(name, __LINE__)
+#define GEN_CLASS_NAME(name) GEN_CLASS_NAME2(name, __COUNTER__)
 
 #define GEN_INSTANCE(name) name ## Instance
 
