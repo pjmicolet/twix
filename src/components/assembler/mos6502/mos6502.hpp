@@ -1,11 +1,11 @@
 #pragma once
 #include <assembler/utils/asm_utils.hpp>
 #include <cstdint>
+#include <format>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <unordered_map>
-#include <cassert>
 
 namespace assembler {
 namespace mos6502 {
@@ -15,7 +15,7 @@ using byte_type = unsigned char;
 // not a name)
 enum ParseType { NONE, SINGLE, DOUBLE };
 
-enum Ops {IMPL, ACC, IMM, ZP, ZPX, ZPY, IZX, IZY, ABS, ABX, ABY, IND, REL};
+enum Ops { IMPL, ACC, IMM, ZP, ZPX, ZPY, IZX, IZY, ABS, ABX, ABY, IND, REL };
 
 // Represents all the different types instructions can be (immediate, Absolute
 // X, Absolute Y) Instructions are basically just the opcode + this optype
@@ -51,13 +51,11 @@ struct OpType {
                size_t index) -> int {
     switch (parseType_) {
     case ParseType::SINGLE: {
-      if (type_ == Ops::IMM) {
-          auto strData = std::to_string(bytes[index]);
-          if(strData.size() < 2) {
-            strData = "0" + strData;
-          }
-        result.emplace_back( name_ + " #" + strData);
+      auto strData = std::format("{:X}", bytes[index]);
+      if (strData.size() < 2) {
+        strData = "0" + strData;
       }
+      decodeOne(strData, result);
       return index + 1;
     }
     case ParseType::DOUBLE:
@@ -68,9 +66,7 @@ struct OpType {
     return 0;
   }
 
-  auto setName(std::string name) {
-    name_ = name;
-  }
+  auto setName(std::string name) { name_ = name; }
 
 private:
   Ops type_;
@@ -88,6 +84,58 @@ private:
     auto val = utils::stringToInt(op);
     data.push_back(static_cast<byte_type>(val & 0xFF));
     data.push_back(static_cast<byte_type>((val & 0xFF00) >> 8));
+  }
+
+  auto decodeOne(std::string &strData, std::vector<std::string> &result)
+      -> void {
+    switch (type_) {
+    case Ops::IMM: {
+      result.emplace_back(name_ + " #" + strData);
+      break;
+    }
+    case Ops::ZP: {
+      result.emplace_back(name_ + " $" + strData);
+      break;
+    }
+    case Ops::ZPX: {
+      result.emplace_back(name_ + " $" + strData + ",X");
+      break;
+    }
+    case Ops::ZPY: {
+      result.emplace_back(name_ + " $" + strData + ",Y");
+      break;
+    }
+    case Ops::IZX: {
+      result.emplace_back(name_ + " $(" + strData + ", X)");
+      break;
+    }
+    case Ops::IZY: {
+      result.emplace_back(name_ + " $(" + strData + "),Y");
+      break;
+    }
+    default:
+      break;
+    }
+  }
+
+  auto decodeTwo(std::string &preParsed, std::vector<std::string> &result)
+      -> void {
+    switch (type_) {
+    case Ops::ABS: {
+      break;
+    }
+    case Ops::ABX: {
+      break;
+    }
+    case Ops::ABY: {
+      break;
+    }
+    case Ops::IND: {
+      break;
+    }
+    default:
+      break;
+    }
   }
 };
 
@@ -144,7 +192,7 @@ struct InstructionSet;
 struct Inst {
   Inst(std::string name, std::vector<OpType> types)
       : name_{name}, types_{types} {
-    for(auto& t : types_) {
+    for (auto &t : types_) {
       t.setName(name_);
     }
   }
