@@ -198,8 +198,8 @@ struct Inst {
   friend InstructionSet;
 
 protected:
-  std::vector<OpType> types_;
   std::string name_;
+  std::vector<OpType> types_;
 };
 
 #define INSTRUCTION(name, ...)                                                 \

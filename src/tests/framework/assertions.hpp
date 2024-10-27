@@ -1,6 +1,7 @@
 #pragma once
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 class TestException : public std::runtime_error {
   std::string exception_;
@@ -21,9 +22,23 @@ inline auto require_true(const std::string statement, const int line,
 };
 
 template <typename T, typename R>
+inline auto compare(const T& rhs, const R& lhs) -> bool {
+  if constexpr(std::is_same<T, R>::value) {
+    return rhs == lhs;
+  } 
+  // There's some signedness we need to check
+  if constexpr(std::is_integral<T>::value && std::is_integral<R>::value) {
+    return std::cmp_equal(rhs,lhs);
+  }
+  else  {
+    return rhs == lhs;
+  }
+}
+
+template <typename T, typename R>
 inline auto require_same(const int line, const T &expected, const R &got)
     -> void {
-  if (expected != got) {
+  if (!compare(expected,got)) {
     std::string expectedS;
     std::string gotS;
 

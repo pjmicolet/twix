@@ -37,7 +37,6 @@ auto Inst::match(std::string &operand, std::vector<byte_type>& result) -> void {
 
 auto mos6502Disassembler::disassemble(std::vector<byte_type>& code, std::vector<std::string>& result) -> void {
   size_t index = 0;
-  const auto totalSize = code.size(); 
   while(index < code.size()) {
     index = disassemble(code, result, index);
   }
