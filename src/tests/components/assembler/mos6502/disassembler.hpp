@@ -19,4 +19,21 @@ TEST_CASE("Basic 6502 Disassembly") {
   disassm.disassemble(bytes, results);
   REQUIRE_SAME(2, results.size());
   REQUIRE_SAME("ADC $(FF),Y", results[1]);
+
+  results.clear();
+  bytes.push_back(0x6D);
+  bytes.push_back(0xAB);
+  bytes.push_back(0xCD);
+  disassm.disassemble(bytes, results);
+  REQUIRE_SAME(3, results.size());
+  REQUIRE_SAME("ADC $CDAB", results[2]);
+
+  results.clear();
+  bytes.push_back(0x79);
+  bytes.push_back(0x0);
+  bytes.push_back(0x0);
+
+  disassm.disassemble(bytes, results);
+  REQUIRE_SAME(4, results.size());
+  REQUIRE_SAME("ADC $0000,Y", results[3]);
 }

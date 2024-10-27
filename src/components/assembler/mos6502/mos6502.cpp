@@ -39,14 +39,16 @@ auto mos6502Disassembler::disassemble(std::vector<byte_type>& code, std::vector<
   size_t index = 0;
   const auto totalSize = code.size(); 
   while(index < code.size()) {
-    index += disassemble(code, result, index);
+    index = disassemble(code, result, index);
   }
 }
 
 auto mos6502Disassembler::disassemble(std::vector<byte_type>& code, std::vector<std::string>& result, size_t index) -> size_t {
   auto opcode = code[index];
   if(insts->contains(opcode)) {
-    return insts->at(opcode).disassm(code, result, index+1);
+    //Increment index as we're skipping opcode
+    index += 1;
+    return insts->at(opcode).disassm(code, result, index);
   }
   throw std::runtime_error("Made up instruction");
 }

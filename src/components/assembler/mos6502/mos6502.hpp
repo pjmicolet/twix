@@ -51,15 +51,17 @@ struct OpType {
                size_t index) -> int {
     switch (parseType_) {
     case ParseType::SINGLE: {
-      auto strData = std::format("{:X}", bytes[index]);
-      if (strData.size() < 2) {
-        strData = "0" + strData;
-      }
-      decodeOne(strData, result);
+      auto strData = std::format("{:02X}", bytes[index]);
+      disasmAddressing(strData, result);
       return index + 1;
     }
-    case ParseType::DOUBLE:
+    case ParseType::DOUBLE: {
+      auto strData = std::format("{:02X}", bytes[index+1]);
+      auto strData2 = std::format("{:02X}", bytes[index]);
+      auto res = strData + strData2;
+      disasmAddressing(res, result);
       return index + 2;
+    }
     case ParseType::NONE:
       return index;
     }
@@ -86,7 +88,7 @@ private:
     data.push_back(static_cast<byte_type>((val & 0xFF00) >> 8));
   }
 
-  auto decodeOne(std::string &strData, std::vector<std::string> &result)
+  auto disasmAddressing(std::string &strData, std::vector<std::string> &result)
       -> void {
     switch (type_) {
     case Ops::IMM: {
@@ -106,31 +108,27 @@ private:
       break;
     }
     case Ops::IZX: {
-      result.emplace_back(name_ + " $(" + strData + ", X)");
+      result.emplace_back(name_ + " $(" + strData + ",X)");
       break;
     }
     case Ops::IZY: {
       result.emplace_back(name_ + " $(" + strData + "),Y");
       break;
     }
-    default:
-      break;
-    }
-  }
-
-  auto decodeTwo(std::string &preParsed, std::vector<std::string> &result)
-      -> void {
-    switch (type_) {
     case Ops::ABS: {
+      result.emplace_back(name_ + " $" + strData);
       break;
     }
     case Ops::ABX: {
+      result.emplace_back(name_ + " $" + strData + ",X");
       break;
     }
     case Ops::ABY: {
+      result.emplace_back(name_ + " $" + strData + ",Y");
       break;
     }
     case Ops::IND: {
+      result.emplace_back(name_ + " ($" + strData + ")");
       break;
     }
     default:
