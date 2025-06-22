@@ -73,8 +73,8 @@ struct OpType {
 private:
   Ops type_;
   uint8_t code_;
-  const std::string_view &opPattern_;
-  const ParseType parseType_;
+  std::string_view opPattern_; // used to be const but makes a mess
+  ParseType parseType_;
   std::string name_;
 
   auto parseOne(std::string_view &op, std::vector<byte_type> &data) -> void {
