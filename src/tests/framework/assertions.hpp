@@ -54,7 +54,7 @@ inline auto require_same(const int line, const T &expected, const R &got)
       gotS = std::string(got);
     }
 
-    std::string issue = ": Items do not match, expected=  \"" +
+    std::string issue = "Line:" + std::to_string(line) + ": Items do not match, expected=  \"" +
                         expectedS + "\" got \"" +
                         gotS +"\"";
     throw TestException(issue);
