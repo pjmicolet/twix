@@ -14,8 +14,9 @@ namespace mos6502 {
 	// It's pretty easy on the 6502 as all arithmetic and logical functions are applied to a single register (accumulator).
 template<typename Memory = cores::testMem> requires cores::MemoryComponent<Memory>
 struct mos6502 {
-#define INST(AddrMode, Operation) AddrMode::execute(*this,&mos6502::Operation);
-#define DEFINE_INST(OpCode, AddrMode, Operation) case(OpCode) : { INST(AddrMode, Operation) break ;};
+#define INST(AddrMode, MemOp, Operation) AddrMode::execute<MemOp>(*this,&mos6502::Operation);
+#define DEFINE_INST(OpCode, AddrMode, Operation) case(OpCode) : { INST(AddrMode, MemoryAction::IsLoad, Operation) break ;};
+#define DEFINE_STORE_INST(OpCode, AddrMode, Operation) case(OpCode) : { INST(AddrMode, MemoryAction::IsStore, Operation) break ;};
 
 		mos6502() {};
 		mos6502(Memory& mem) : mem_component(mem) {
@@ -37,6 +38,14 @@ struct mos6502 {
     auto nextByte() -> uint16_t {
       R.PC++;
       return R.PC;
+    }
+
+    auto setX(uint8_t data) -> void {
+      R.X = data;
+    }
+
+    auto setY(uint8_t data) -> void {
+      R.Y = data;
     }
 
     auto getX() -> uint8_t {
@@ -79,6 +88,43 @@ public:
      R.setZ(R.ACC);
     return 0;
   }
+
+//Memory ops
+  auto ldx(uint16_t m) -> uint64_t {
+    R.X = m;
+    R.Status.N = (R.X & 0x80);
+    R.setZ(R.X);
+    return 2;
+  }
+
+  auto lda(uint16_t m) -> uint64_t {
+    R.ACC = m;
+    R.Status.N = (R.ACC & 0x80);
+    R.setZ(R.ACC);
+    return 2;
+  }
+
+  auto ldy(uint16_t m) -> uint64_t {
+    R.Y = m;
+    R.Status.N = (R.Y & 0x80);
+    R.setZ(R.Y);
+    return 2;
+  }
+
+  auto stx(uint16_t m) -> uint64_t {
+    mem_component.store(m, R.X);
+    return 2;
+  }
+
+  auto sta(uint16_t m) -> uint64_t {
+    mem_component.store(m, R.ACC);
+    return 2;
+  }
+
+  auto sty(uint16_t m) -> uint64_t {
+    mem_component.store(m, R.Y);
+    return 2;
+  }
 		
 //Logical
 #include "logical.hpp"
@@ -90,6 +136,34 @@ public:
 public:
 		auto runCycle() -> void {
 			switch(mem_component.load(R.PC)) {
+      //memory
+        DEFINE_INST(0xA9, ImmediateMode, ldx)
+        DEFINE_INST(0xA5, ZP, ldx)
+        DEFINE_INST(0xB5, ZPX, ldx)
+        DEFINE_INST(0xAD, AbsAddress, ldx)
+        DEFINE_INST(0xBD, AbsX, ldx)
+        DEFINE_INST(0xB9, AbsY, ldx)
+
+        DEFINE_INST(0xA2, ImmediateMode, ldx)
+        DEFINE_INST(0xA6, ZP, ldx)
+        DEFINE_INST(0xB6, ZPY, ldx)
+        DEFINE_INST(0xAE, AbsAddress, ldx)
+        DEFINE_INST(0xBE, AbsY, ldx)
+
+        DEFINE_INST(0xA0, ImmediateMode, ldy)
+        DEFINE_INST(0xA4, ZP, ldy)
+        DEFINE_INST(0xB4, ZPX, ldy)
+        DEFINE_INST(0xAC, AbsAddress, ldy)
+        DEFINE_INST(0xBC, AbsX, ldy)
+
+        DEFINE_STORE_INST(0x85, ZP, sta);
+        DEFINE_STORE_INST(0x95, ZPX, sta);
+        DEFINE_STORE_INST(0x8D, AbsAddress, sta);
+
+        DEFINE_STORE_INST(0x86, ZP, stx);
+        DEFINE_STORE_INST(0x96, ZPY, stx);
+        DEFINE_STORE_INST(0x8E, AbsAddress, stx);
+
 				DEFINE_INST(0x69, ImmediateMode, adc)
 				DEFINE_INST(0x65, ZP, adc)
 				DEFINE_INST(0x75, ZPX, adc)

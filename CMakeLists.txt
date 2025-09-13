@@ -3,6 +3,6 @@ set (CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(Twix)
 
-SET( CMAKE_CXX_FLAGS "-Wall -Wpedantic -Werror -Og -g")
+SET( CMAKE_CXX_FLAGS "-Wall -Wpedantic -Werror -O3 -g")
 
 add_subdirectory(src)

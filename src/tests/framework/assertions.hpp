@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <functional>
 
 class TestException : public std::runtime_error {
   std::string exception_;
@@ -36,7 +37,7 @@ inline auto compare(const T& rhs, const R& lhs) -> bool {
 }
 
 template <typename T, typename R>
-inline auto require_same(const int line, const T &expected, const R &got)
+inline auto require_same(const int line, const T &expected, const R &got, std::function<std::string()> onDump = [](){ return "";})
     -> void {
   if (!compare(expected,got)) {
     std::string expectedS;
@@ -54,9 +55,13 @@ inline auto require_same(const int line, const T &expected, const R &got)
       gotS = std::string(got);
     }
 
+    std::string extraDump = onDump();
     std::string issue = "Line:" + std::to_string(line) + ": Items do not match, expected=  \"" +
                         expectedS + "\" got \"" +
                         gotS +"\"";
+    if(!extraDump.empty()) {
+      issue += " Extra Info: " + extraDump;
+    }
     throw TestException(issue);
   }
 };
@@ -68,3 +73,6 @@ inline auto require_same(const int line, const T &expected, const R &got)
 
 #define REQUIRE_SAME(EXPECTED, GOT)                                            \
   Test::Exceptions::require_same(__LINE__, EXPECTED, GOT);
+
+#define REQUIRE_SAME_VERBOSE(EXPECTED, GOT, DUMP)                               \
+  Test::Exceptions::require_same(__LINE__, EXPECTED, GOT, DUMP);
