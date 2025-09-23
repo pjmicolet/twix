@@ -22,6 +22,18 @@ struct LocalMem {
     localMem_ = data;
   }
 
+  auto dump() -> std::string {
+    std::string mem = "memory: [";
+    bool isFirst = true;
+    for(auto& bin : localMem_) {
+      mem += isFirst ? "" : ", ";
+      mem += std::to_string(bin);
+      isFirst = false;
+    }
+    mem += "]";
+    return mem;
+  }
+
   std::vector<uint8_t> localMem_;
 };
 
@@ -61,6 +73,23 @@ TEST_CASE("Test LDX") {
   REQUIRE_SAME(0x13, core.getX());
 }
 
+TEST_CASE("Test SDY") {
+  LocalMem mem{};
+  std::vector<std::string> listing{};
+  assembler::mos6502::mos6502Assembler assembler{};
+  cores::mos6502::mos6502 core{mem}; 
+
+  std::vector<uint8_t> bank{0,0,0,0,0,0,0,0,0,0}; // 10 slots
+  listing.emplace_back("STY $00");
+  auto code = assembler.assemble(listing);
+  bank.insert(bank.end(), code.begin(), code.end());
+  mem.set(bank);
+  core.setPC(0xA);
+  core.setY(0x5);
+  core.runCycle();
+  REQUIRE_SAME(0x5, mem.load(0x0));
+}
+
 TEST_CASE("Test SDX") {
   LocalMem mem{};
   std::vector<std::string> listing{};
@@ -69,6 +98,7 @@ TEST_CASE("Test SDX") {
 
   std::vector<uint8_t> bank{0,0,0,0,0,0,0,0,0,0}; // 10 slots
   listing.emplace_back("STX $00");
+  listing.emplace_back("STX $01,Y");
   auto code = assembler.assemble(listing);
   bank.insert(bank.end(), code.begin(), code.end());
   mem.set(bank);
@@ -76,6 +106,11 @@ TEST_CASE("Test SDX") {
   core.setX(0x5);
   core.runCycle();
   REQUIRE_SAME(0x5, mem.load(0x0));
+  core.setX(0x12);
+  core.setY(0x1);
+  core.runCycle();
+  auto dumpInfo = [=](){ return mem.dump(); };
+  REQUIRE_SAME_VERBOSE(0x12, mem.load(0x2), dumpInfo);
 }
 
 TEST_CASE("Test ADC") {

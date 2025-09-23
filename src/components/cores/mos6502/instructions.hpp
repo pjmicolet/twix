@@ -159,11 +159,20 @@ public:
         DEFINE_STORE_INST(0x85, ZP, sta);
         DEFINE_STORE_INST(0x95, ZPX, sta);
         DEFINE_STORE_INST(0x8D, AbsAddress, sta);
+        DEFINE_STORE_INST(0x9D, AbsX, sta);
+        DEFINE_STORE_INST(0x99, AbsY, sta);
+        DEFINE_STORE_INST(0x81, IndX, sta);
+        DEFINE_STORE_INST(0x91, IndY, sta);
 
         DEFINE_STORE_INST(0x86, ZP, stx);
         DEFINE_STORE_INST(0x96, ZPY, stx);
         DEFINE_STORE_INST(0x8E, AbsAddress, stx);
 
+        DEFINE_STORE_INST(0x84, ZP, sty);
+        DEFINE_STORE_INST(0x94, ZPY, sty);
+        DEFINE_STORE_INST(0x8C, AbsAddress, sty);
+      
+//arithmetic 
 				DEFINE_INST(0x69, ImmediateMode, adc)
 				DEFINE_INST(0x65, ZP, adc)
 				DEFINE_INST(0x75, ZPX, adc)
