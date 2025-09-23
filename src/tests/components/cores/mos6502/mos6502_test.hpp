@@ -109,7 +109,7 @@ TEST_CASE("Test SDX") {
   core.setX(0x12);
   core.setY(0x1);
   core.runCycle();
-  auto dumpInfo = [=](){ return mem.dump(); };
+  auto dumpInfo = [=]() mutable { return mem.dump(); };
   REQUIRE_SAME_VERBOSE(0x12, mem.load(0x2), dumpInfo);
 }
 

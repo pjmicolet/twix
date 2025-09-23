@@ -23,7 +23,7 @@ struct ImmediateMode {
 struct ZPX {
     template <MemoryAction m,typename CPU, typename Input>
     static auto execute(CPU& cpu, uint64_t(CPU::*instruction)(Input)) -> uint64_t {
-      uint16_t mem = static_cast<uint16_t>(cpu.getX() + cpu.nextByte())&0xFF;
+      uint16_t mem = static_cast<uint16_t>(cpu.getX() + cpu.load(cpu.nextByte()))&0xFF;
       if constexpr(m == IsLoad) {
         uint8_t data = cpu.load(mem);
         return 3 + (cpu.*instruction)(data);
@@ -36,7 +36,7 @@ struct ZPX {
 struct ZPY {
     template <MemoryAction m,typename CPU, typename Input>
     static auto execute(CPU& cpu, uint64_t(CPU::*instruction)(Input)) -> uint64_t {
-      uint16_t mem = static_cast<uint16_t>(cpu.getY() + cpu.nextByte())&0xFF;
+      uint16_t mem = static_cast<uint16_t>(cpu.getY() + cpu.load(cpu.nextByte()))&0xFF;
       if constexpr(m == IsLoad) {
         uint8_t data = cpu.load(mem);
         return 3 + (cpu.*instruction)(data);
