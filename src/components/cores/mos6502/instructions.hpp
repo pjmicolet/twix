@@ -126,9 +126,6 @@ public:
     return 2;
   }
 		
-//Logical
-#include "logical.hpp"
-
 //Shifts
 		auto asl(uint8_t addr) -> void {
 			addr <<= 2; 
@@ -136,25 +133,25 @@ public:
 public:
 		auto runCycle() -> void {
 			switch(mem_component.load(R.PC)) {
-      //memory
-        DEFINE_INST(0xA9, ImmediateMode, ldx)
-        DEFINE_INST(0xA5, ZP, ldx)
-        DEFINE_INST(0xB5, ZPX, ldx)
-        DEFINE_INST(0xAD, AbsAddress, ldx)
-        DEFINE_INST(0xBD, AbsX, ldx)
-        DEFINE_INST(0xB9, AbsY, ldx)
+				//memory
+				DEFINE_INST(0xA9, ImmediateMode, ldx)
+				DEFINE_INST(0xA5, ZP, ldx)
+				DEFINE_INST(0xB5, ZPX, ldx)
+				DEFINE_INST(0xAD, AbsAddress, ldx)
+				DEFINE_INST(0xBD, AbsX, ldx)
+				DEFINE_INST(0xB9, AbsY, ldx)
 
-        DEFINE_INST(0xA2, ImmediateMode, ldx)
-        DEFINE_INST(0xA6, ZP, ldx)
-        DEFINE_INST(0xB6, ZPY, ldx)
-        DEFINE_INST(0xAE, AbsAddress, ldx)
-        DEFINE_INST(0xBE, AbsY, ldx)
+				DEFINE_INST(0xA2, ImmediateMode, ldx)
+				DEFINE_INST(0xA6, ZP, ldx)
+				DEFINE_INST(0xB6, ZPY, ldx)
+				DEFINE_INST(0xAE, AbsAddress, ldx)
+				DEFINE_INST(0xBE, AbsY, ldx)
 
-        DEFINE_INST(0xA0, ImmediateMode, ldy)
-        DEFINE_INST(0xA4, ZP, ldy)
-        DEFINE_INST(0xB4, ZPX, ldy)
-        DEFINE_INST(0xAC, AbsAddress, ldy)
-        DEFINE_INST(0xBC, AbsX, ldy)
+				DEFINE_INST(0xA0, ImmediateMode, ldy)
+				DEFINE_INST(0xA4, ZP, ldy)
+				DEFINE_INST(0xB4, ZPX, ldy)
+				DEFINE_INST(0xAC, AbsAddress, ldy)
+				DEFINE_INST(0xBC, AbsX, ldy)
 
         DEFINE_STORE_INST(0x85, ZP, sta);
         DEFINE_STORE_INST(0x95, ZPX, sta);
@@ -164,9 +161,9 @@ public:
         DEFINE_STORE_INST(0x81, IndX, sta);
         DEFINE_STORE_INST(0x91, IndY, sta);
 
-        DEFINE_STORE_INST(0x86, ZP, stx);
-        DEFINE_STORE_INST(0x96, ZPY, stx);
-        DEFINE_STORE_INST(0x8E, AbsAddress, stx);
+				DEFINE_STORE_INST(0x86, ZP, stx);
+				DEFINE_STORE_INST(0x96, ZPY, stx);
+				DEFINE_STORE_INST(0x8E, AbsAddress, stx);
 
         DEFINE_STORE_INST(0x84, ZP, sty);
         DEFINE_STORE_INST(0x94, ZPY, sty);
@@ -181,7 +178,7 @@ public:
 				DEFINE_INST(0x79, AbsY, adc)
 				DEFINE_INST(0x61, IndX, adc)
 				DEFINE_INST(0x71, IndY, adc)
-			};
+		};
       nextByte();
 		};
 
