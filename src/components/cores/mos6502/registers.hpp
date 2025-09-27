@@ -23,7 +23,7 @@ namespace mos6502 {
       Status.Z = val == 0 ? 0x1: 0x0; 
     }
     auto setC(uint16_t val) -> void {
-      Status.C = (val & 0x100) != 0x0; 
+      Status.C = val; 
     }
     auto reset() -> void {
        PC = 0;

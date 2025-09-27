@@ -60,6 +60,10 @@ struct mos6502 {
       return R.ACC;
     }
 
+    auto getCarry() -> uint8_t {
+      return R.Status.C;
+    }
+
     auto load(uint16_t address) -> uint8_t {
       return mem_component.load(address);
     }
@@ -81,11 +85,18 @@ private:
 public:
 //Arithmetic Operations
   auto adc(uint16_t m) -> uint64_t {
-     uint16_t tmp = R.ACC + m;
-     R.setC(tmp); // easiest way
+     uint16_t tmp = R.ACC + m + R.Status.C;
+     uint8_t oldC = R.Status.C;
+     R.Status.C = (tmp & 0x100 )!= 0; // easiest way
      R.Status.O = willOverflow(R.ACC, m, tmp&0xFF);
-     R.ACC = R.ACC + m + R.Status.C;
+     R.ACC = R.ACC + m + oldC;
      R.setZ(R.ACC);
+    return 0;
+  }
+
+  auto sbc(uint16_t m) -> uint64_t {
+    //Just read into it
+    adc(~m);
     return 0;
   }
 
@@ -127,9 +138,9 @@ public:
   }
     
 //Shifts
-    auto asl(uint8_t addr) -> void {
-      addr <<= 2; 
-    }
+  auto asl(uint8_t addr) -> void {
+    addr <<= 2; 
+  }
 public:
     auto runCycle() -> void {
       switch(mem_component.load(R.PC)) {
@@ -178,6 +189,15 @@ public:
         DEFINE_INST(0x79, AbsY, adc)
         DEFINE_INST(0x61, IndX, adc)
         DEFINE_INST(0x71, IndY, adc)
+
+        DEFINE_INST(0xE9, ImmediateMode, sbc)
+        DEFINE_INST(0xE5, ZP, sbc)
+        DEFINE_INST(0xF5, ZPX, sbc)
+        DEFINE_INST(0xED, AbsAddress, sbc)
+        DEFINE_INST(0xFD, AbsX, sbc)
+        DEFINE_INST(0xF9, AbsY, sbc)
+        DEFINE_INST(0xE1, IndX, sbc)
+        DEFINE_INST(0xF1, IndY, sbc)
     };
       nextByte();
     };
