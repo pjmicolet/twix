@@ -12,6 +12,13 @@ enum MemoryAction {
 //This leads to an awkward situation where STA $0000 you want to *actually* take $0000, so the MemoryAction
 //lets us pass addresses for store-based instructions and actual data for all other instructions.
 
+struct Implied {
+    template <MemoryAction m, typename CPU, typename Input>
+    static auto execute(CPU& cpu, uint64_t(CPU::*instruction)(Input)) -> uint64_t {
+      return (cpu.*instruction)(0);
+    }
+};
+
 struct ImmediateMode {
     template <MemoryAction m, typename CPU, typename Input>
     static auto execute(CPU& cpu, uint64_t(CPU::*instruction)(Input)) -> uint64_t {

@@ -100,6 +100,42 @@ public:
     return 0;
   }
 
+//Status Flags Ops
+  auto clc(uint16_t m) -> uint64_t {
+    R.Status.C = 0;
+    return 2;
+  }
+
+  auto cld(uint16_t m) -> uint64_t {
+    R.Status.D = 0;
+    return 2;
+  }
+
+  auto cli(uint16_t m) -> uint64_t {
+    R.Status.I = 0;
+    return 2;
+  }
+
+  auto clv(uint16_t m) -> uint64_t {
+    R.Status.O = 0;
+    return 2;
+  }
+
+  auto sec(uint16_t m) -> uint64_t {
+    R.Status.C = 1;
+    return 2;
+  }
+
+  auto sed(uint16_t m) -> uint64_t {
+    R.Status.D = 1;
+    return 2;
+  }
+
+  auto sei(uint16_t m) -> uint64_t {
+    R.Status.I = 1;
+    return 2;
+  }
+
 //Memory ops
   auto ldx(uint16_t m) -> uint64_t {
     R.X = m;
@@ -198,6 +234,15 @@ public:
         DEFINE_INST(0xF9, AbsY, sbc)
         DEFINE_INST(0xE1, IndX, sbc)
         DEFINE_INST(0xF1, IndY, sbc)
+
+        DEFINE_INST(0x18, Implied, clc)
+        DEFINE_INST(0xD8, Implied, cld)
+        DEFINE_INST(0x58, Implied, cli)
+        DEFINE_INST(0xB8, Implied, clv)
+
+        DEFINE_INST(0x38, Implied, sec)
+        DEFINE_INST(0xF8, Implied, sed)
+        DEFINE_INST(0x78, Implied, sei)
     };
       nextByte();
     };

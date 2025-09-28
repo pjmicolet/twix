@@ -57,4 +57,9 @@ TEST_CASE("Basic 6502 Assembly") {
   REQUIRE_SAME(2, data.size());
   REQUIRE_SAME(0x71, data[0]);
   REQUIRE_SAME(0x32, data[1]);
+
+  RESET(listing, "SEC");
+  data = assembler.assemble(listing);
+  REQUIRE_SAME(1, data.size());
+  REQUIRE_SAME(0x38, data[0]);
 }
