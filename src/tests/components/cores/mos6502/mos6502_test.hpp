@@ -193,6 +193,8 @@ TEST_CASE("AND") {
   listing.emplace_back("LDA #10");
   listing.emplace_back("AND #10");
   listing.emplace_back("AND #00");
+  listing.emplace_back("LDA #10");
+  listing.emplace_back("BIT $00"); //Doesn't really make sense but #10 isn't going to be LDA's hex code
   mem.set(assembler.assemble(listing));
   cores::mos6502::mos6502 core{mem}; 
   core.runCycle();
@@ -200,5 +202,9 @@ TEST_CASE("AND") {
   REQUIRE_SAME(0x10, core.getAcc());
   core.runCycle();
   REQUIRE_SAME(0x00, core.getAcc());
+  REQUIRE_SAME(0x1, core.getZero());
+  core.runCycle();
+  REQUIRE_SAME(0x0, core.getZero());
+  core.runCycle();
   REQUIRE_SAME(0x1, core.getZero());
 }

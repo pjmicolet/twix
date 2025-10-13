@@ -213,6 +213,14 @@ public:
      return 0;
   }
 
+  auto bit(uint8_t data) -> uint64_t {
+     auto res = R.ACC & data;
+     R.Status.Z = res == 0;
+     R.Status.N = res & 0x80;
+     R.Status.N = res & 0x40;
+     return 0;
+  }
+
 public:
     auto runCycle() -> void {
       switch(mem_component.load(R.PC)) {
@@ -289,6 +297,9 @@ public:
         DEFINE_INST(0x39, AbsY, and_op)
         DEFINE_INST(0x21, IndX, and_op)
         DEFINE_INST(0x31, IndX, and_op)
+
+        DEFINE_INST(0x24, ZP, bit)
+        DEFINE_INST(0x2C, AbsAddress, bit)
     };
       nextByte();
     };
