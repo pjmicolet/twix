@@ -8,32 +8,32 @@
 
 namespace cores {
 namespace mos6502 {
-	// I basically had a quick look at different emulators, but mainly higen and also some cpp video about fast dispatch.
-	// A lot of times I've tried doing this by defining functions with the inputs and then storing state, this time I want to try something similar to higen where 
-	// it's the addressing modes that apply a function
-	// It's pretty easy on the 6502 as all arithmetic and logical functions are applied to a single register (accumulator).
+  // I basically had a quick look at different emulators, but mainly higen and also some cpp video about fast dispatch.
+  // A lot of times I've tried doing this by defining functions with the inputs and then storing state, this time I want to try something similar to higen where 
+  // it's the addressing modes that apply a function
+  // It's pretty easy on the 6502 as all arithmetic and logical functions are applied to a single register (accumulator).
 template<typename Memory = cores::testMem> requires cores::MemoryComponent<Memory>
 struct mos6502 {
 #define INST(AddrMode, MemOp, Operation) AddrMode::execute<MemOp>(*this,&mos6502::Operation);
 #define DEFINE_INST(OpCode, AddrMode, Operation) case(OpCode) : { INST(AddrMode, MemoryAction::IsLoad, Operation) break ;};
 #define DEFINE_STORE_INST(OpCode, AddrMode, Operation) case(OpCode) : { INST(AddrMode, MemoryAction::IsStore, Operation) break ;};
 
-		mos6502() {};
-		mos6502(Memory& mem) : mem_component(mem) {
-			static_assert(std::is_same_v<MemType, Memory&>, "We're good");
-		};
+    mos6502() {};
+    mos6502(Memory& mem) : mem_component(mem) {
+      static_assert(std::is_same_v<MemType, Memory&>, "We're good");
+    };
 
-		auto setPC(uint16_t pc) -> void {
-			R.PC = pc;
-		}
+    auto setPC(uint16_t pc) -> void {
+      R.PC = pc;
+    }
 
     auto clearState() -> void {
       R.reset();
     }
 
-		auto showState() -> void {
-			std::print("{}\n", R);
-		}
+    auto showState() -> void {
+      std::print("{}\n", R);
+    }
 
     auto nextByte() -> uint16_t {
       R.PC++;
@@ -60,19 +60,23 @@ struct mos6502 {
       return R.ACC;
     }
 
+    auto getCarry() -> uint8_t {
+      return R.Status.C;
+    }
+
     auto load(uint16_t address) -> uint8_t {
       return mem_component.load(address);
     }
 
 private:
-		using fp = void (mos6502::*)(uint16_t);
-		using implicitFp = void (mos6502::*)();
-		using onAddress = void (mos6502::*)(uint8_t&);
+    using fp = void (mos6502::*)(uint16_t);
+    using implicitFp = void (mos6502::*)();
+    using onAddress = void (mos6502::*)(uint8_t&);
 
-		using MemType = std::conditional_t<std::is_same_v<Memory, cores::testMem>, Memory, Memory&>;
-		MemType& mem_component;
+    using MemType = std::conditional_t<std::is_same_v<Memory, cores::testMem>, Memory, Memory&>;
+    MemType& mem_component;
 
-		Registers R;
+    Registers R;
 
     auto willOverflow(uint8_t acc, uint8_t mem, uint16_t res) -> bool {
       return ((acc^res) & (mem^res) & 0x80) != 0x00;
@@ -81,12 +85,55 @@ private:
 public:
 //Arithmetic Operations
   auto adc(uint16_t m) -> uint64_t {
-     uint16_t tmp = R.ACC + m;
-     R.setC(tmp); // easiest way
+     uint16_t tmp = R.ACC + m + R.Status.C;
+     uint8_t oldC = R.Status.C;
+     R.Status.C = (tmp & 0x100 )!= 0; // easiest way
      R.Status.O = willOverflow(R.ACC, m, tmp&0xFF);
-     R.ACC = R.ACC + m + R.Status.C;
+     R.ACC = R.ACC + m + oldC;
      R.setZ(R.ACC);
     return 0;
+  }
+
+  auto sbc(uint16_t m) -> uint64_t {
+    //Just read into it
+    adc(~m);
+    return 0;
+  }
+
+//Status Flags Ops
+  auto clc(uint16_t m) -> uint64_t {
+    R.Status.C = 0;
+    return 2;
+  }
+
+  auto cld(uint16_t m) -> uint64_t {
+    R.Status.D = 0;
+    return 2;
+  }
+
+  auto cli(uint16_t m) -> uint64_t {
+    R.Status.I = 0;
+    return 2;
+  }
+
+  auto clv(uint16_t m) -> uint64_t {
+    R.Status.O = 0;
+    return 2;
+  }
+
+  auto sec(uint16_t m) -> uint64_t {
+    R.Status.C = 1;
+    return 2;
+  }
+
+  auto sed(uint16_t m) -> uint64_t {
+    R.Status.D = 1;
+    return 2;
+  }
+
+  auto sei(uint16_t m) -> uint64_t {
+    R.Status.I = 1;
+    return 2;
   }
 
 //Memory ops
@@ -125,33 +172,33 @@ public:
     mem_component.store(m, R.Y);
     return 2;
   }
-		
+    
 //Shifts
-		auto asl(uint8_t addr) -> void {
-			addr <<= 2; 
-		}
+  auto asl(uint8_t addr) -> void {
+    addr <<= 2; 
+  }
 public:
-		auto runCycle() -> void {
-			switch(mem_component.load(R.PC)) {
-				//memory
-				DEFINE_INST(0xA9, ImmediateMode, ldx)
-				DEFINE_INST(0xA5, ZP, ldx)
-				DEFINE_INST(0xB5, ZPX, ldx)
-				DEFINE_INST(0xAD, AbsAddress, ldx)
-				DEFINE_INST(0xBD, AbsX, ldx)
-				DEFINE_INST(0xB9, AbsY, ldx)
+    auto runCycle() -> void {
+      switch(mem_component.load(R.PC)) {
+        //memory
+        DEFINE_INST(0xA9, ImmediateMode, ldx)
+        DEFINE_INST(0xA5, ZP, ldx)
+        DEFINE_INST(0xB5, ZPX, ldx)
+        DEFINE_INST(0xAD, AbsAddress, ldx)
+        DEFINE_INST(0xBD, AbsX, ldx)
+        DEFINE_INST(0xB9, AbsY, ldx)
 
-				DEFINE_INST(0xA2, ImmediateMode, ldx)
-				DEFINE_INST(0xA6, ZP, ldx)
-				DEFINE_INST(0xB6, ZPY, ldx)
-				DEFINE_INST(0xAE, AbsAddress, ldx)
-				DEFINE_INST(0xBE, AbsY, ldx)
+        DEFINE_INST(0xA2, ImmediateMode, ldx)
+        DEFINE_INST(0xA6, ZP, ldx)
+        DEFINE_INST(0xB6, ZPY, ldx)
+        DEFINE_INST(0xAE, AbsAddress, ldx)
+        DEFINE_INST(0xBE, AbsY, ldx)
 
-				DEFINE_INST(0xA0, ImmediateMode, ldy)
-				DEFINE_INST(0xA4, ZP, ldy)
-				DEFINE_INST(0xB4, ZPX, ldy)
-				DEFINE_INST(0xAC, AbsAddress, ldy)
-				DEFINE_INST(0xBC, AbsX, ldy)
+        DEFINE_INST(0xA0, ImmediateMode, ldy)
+        DEFINE_INST(0xA4, ZP, ldy)
+        DEFINE_INST(0xB4, ZPX, ldy)
+        DEFINE_INST(0xAC, AbsAddress, ldy)
+        DEFINE_INST(0xBC, AbsX, ldy)
 
         DEFINE_STORE_INST(0x85, ZP, sta);
         DEFINE_STORE_INST(0x95, ZPX, sta);
@@ -161,28 +208,46 @@ public:
         DEFINE_STORE_INST(0x81, IndX, sta);
         DEFINE_STORE_INST(0x91, IndY, sta);
 
-				DEFINE_STORE_INST(0x86, ZP, stx);
-				DEFINE_STORE_INST(0x96, ZPY, stx);
-				DEFINE_STORE_INST(0x8E, AbsAddress, stx);
+        DEFINE_STORE_INST(0x86, ZP, stx);
+        DEFINE_STORE_INST(0x96, ZPY, stx);
+        DEFINE_STORE_INST(0x8E, AbsAddress, stx);
 
         DEFINE_STORE_INST(0x84, ZP, sty);
         DEFINE_STORE_INST(0x94, ZPY, sty);
         DEFINE_STORE_INST(0x8C, AbsAddress, sty);
       
 //arithmetic 
-				DEFINE_INST(0x69, ImmediateMode, adc)
-				DEFINE_INST(0x65, ZP, adc)
-				DEFINE_INST(0x75, ZPX, adc)
-				DEFINE_INST(0x6D, AbsAddress, adc)
-				DEFINE_INST(0x7D, AbsX, adc)
-				DEFINE_INST(0x79, AbsY, adc)
-				DEFINE_INST(0x61, IndX, adc)
-				DEFINE_INST(0x71, IndY, adc)
-		};
-      nextByte();
-		};
+        DEFINE_INST(0x69, ImmediateMode, adc)
+        DEFINE_INST(0x65, ZP, adc)
+        DEFINE_INST(0x75, ZPX, adc)
+        DEFINE_INST(0x6D, AbsAddress, adc)
+        DEFINE_INST(0x7D, AbsX, adc)
+        DEFINE_INST(0x79, AbsY, adc)
+        DEFINE_INST(0x61, IndX, adc)
+        DEFINE_INST(0x71, IndY, adc)
 
-	};
+        DEFINE_INST(0xE9, ImmediateMode, sbc)
+        DEFINE_INST(0xE5, ZP, sbc)
+        DEFINE_INST(0xF5, ZPX, sbc)
+        DEFINE_INST(0xED, AbsAddress, sbc)
+        DEFINE_INST(0xFD, AbsX, sbc)
+        DEFINE_INST(0xF9, AbsY, sbc)
+        DEFINE_INST(0xE1, IndX, sbc)
+        DEFINE_INST(0xF1, IndY, sbc)
+
+        DEFINE_INST(0x18, Implied, clc)
+        DEFINE_INST(0xD8, Implied, cld)
+        DEFINE_INST(0x58, Implied, cli)
+        DEFINE_INST(0xB8, Implied, clv)
+
+        DEFINE_INST(0x38, Implied, sec)
+        DEFINE_INST(0xF8, Implied, sed)
+        DEFINE_INST(0x78, Implied, sei)
+    };
+      nextByte();
+    };
+
+  };
 };
 
 };

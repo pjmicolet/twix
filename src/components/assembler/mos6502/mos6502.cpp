@@ -17,7 +17,9 @@ auto mos6502Assembler::assemble(std::string &inst,
                                 std::vector<byte_type> &result) -> void {
   auto splitInstruction = utils::strSplit(inst);
   std::string instName{splitInstruction[0]};
-  std::string operand{splitInstruction[1]};
+  std::string operand = "";
+  if(splitInstruction.size() > 1)
+    operand = splitInstruction[1];
   if (insts->contains(instName)) {
     insts->at(instName).match(operand, result);
   }

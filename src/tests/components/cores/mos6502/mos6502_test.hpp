@@ -142,3 +142,33 @@ TEST_CASE("Test ADC") {
   core.runCycle();
   REQUIRE_SAME(0x21, core.getAcc());
 }
+
+TEST_CASE("Test SDC") {
+  LocalMem mem{};
+  std::vector<std::string> listing{};
+  assembler::mos6502::mos6502Assembler assembler{};
+  listing.emplace_back("ADC #10");
+  listing.emplace_back("SBC #01");
+  listing.emplace_back("SBC #0E"); // That will do 0xE - 0xE - (1 - 0) so it should wrap around to 0xFF with Carry set to 1
+  mem.set(assembler.assemble(listing));
+  cores::mos6502::mos6502 core{mem}; 
+  core.runCycle();
+  core.runCycle();
+  REQUIRE_SAME(0xE, core.getAcc());
+  core.runCycle();
+  REQUIRE_SAME(0xFF, core.getAcc());
+  REQUIRE_SAME(0x1, core.getCarry());
+}
+
+TEST_CASE("SET INSTRUCTIONS") {
+  LocalMem mem{};
+  std::vector<std::string> listing{};
+  assembler::mos6502::mos6502Assembler assembler{};
+  listing.emplace_back("SEC");
+  listing.emplace_back("ADC #01");
+  mem.set(assembler.assemble(listing));
+  cores::mos6502::mos6502 core{mem}; 
+  core.runCycle();
+  core.runCycle();
+  REQUIRE_SAME(0x2, core.getAcc());
+}
