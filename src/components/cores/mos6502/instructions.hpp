@@ -64,6 +64,18 @@ struct mos6502 {
       return R.Status.C;
     }
 
+    auto getZero() -> uint8_t {
+      return R.Status.Z;
+    }
+
+    auto getInt() -> uint8_t {
+      return R.Status.I;
+    }
+
+    auto getDig() -> uint8_t {
+      return R.Status.D;
+    }
+
     auto load(uint16_t address) -> uint8_t {
       return mem_component.load(address);
     }
@@ -177,16 +189,40 @@ public:
   auto asl(uint8_t addr) -> void {
     addr <<= 2; 
   }
+
+//Logical
+
+  auto and_op(uint8_t data) -> uint64_t {
+     R.ACC &= data;
+     R.Status.Z = R.ACC == 0;
+     R.Status.N = R.ACC & 0x80;
+     return 0;
+  }
+
+  auto or_op(uint8_t data) -> uint64_t {
+     R.ACC |= data;
+     R.Status.Z = R.ACC == 0;
+     R.Status.N = R.ACC & 0x80;
+     return 0;
+  }
+
+  auto xor_op(uint8_t data) -> uint64_t {
+     R.ACC ^= data;
+     R.Status.Z = R.ACC == 0;
+     R.Status.N = R.ACC & 0x80;
+     return 0;
+  }
+
 public:
     auto runCycle() -> void {
       switch(mem_component.load(R.PC)) {
         //memory
-        DEFINE_INST(0xA9, ImmediateMode, ldx)
-        DEFINE_INST(0xA5, ZP, ldx)
-        DEFINE_INST(0xB5, ZPX, ldx)
-        DEFINE_INST(0xAD, AbsAddress, ldx)
-        DEFINE_INST(0xBD, AbsX, ldx)
-        DEFINE_INST(0xB9, AbsY, ldx)
+        DEFINE_INST(0xA9, ImmediateMode, lda)
+        DEFINE_INST(0xA5, ZP, lda)
+        DEFINE_INST(0xB5, ZPX, lda)
+        DEFINE_INST(0xAD, AbsAddress, lda)
+        DEFINE_INST(0xBD, AbsX, lda)
+        DEFINE_INST(0xB9, AbsY, lda)
 
         DEFINE_INST(0xA2, ImmediateMode, ldx)
         DEFINE_INST(0xA6, ZP, ldx)
@@ -213,7 +249,7 @@ public:
         DEFINE_STORE_INST(0x8E, AbsAddress, stx);
 
         DEFINE_STORE_INST(0x84, ZP, sty);
-        DEFINE_STORE_INST(0x94, ZPY, sty);
+        DEFINE_STORE_INST(0x92, ZPY, sty);
         DEFINE_STORE_INST(0x8C, AbsAddress, sty);
       
 //arithmetic 
@@ -243,6 +279,16 @@ public:
         DEFINE_INST(0x38, Implied, sec)
         DEFINE_INST(0xF8, Implied, sed)
         DEFINE_INST(0x78, Implied, sei)
+//Logical
+
+        DEFINE_INST(0x29, ImmediateMode, and_op)
+        DEFINE_INST(0x25, ZP, and_op)
+        DEFINE_INST(0x35, ZPX, and_op)
+        DEFINE_INST(0x2D, AbsAddress, and_op)
+        DEFINE_INST(0x3D, AbsX, and_op)
+        DEFINE_INST(0x39, AbsY, and_op)
+        DEFINE_INST(0x21, IndX, and_op)
+        DEFINE_INST(0x31, IndX, and_op)
     };
       nextByte();
     };

@@ -160,15 +160,45 @@ TEST_CASE("Test SDC") {
   REQUIRE_SAME(0x1, core.getCarry());
 }
 
-TEST_CASE("SET INSTRUCTIONS") {
+TEST_CASE("SET AND CLEAR INSTRUCTIONS") {
   LocalMem mem{};
   std::vector<std::string> listing{};
   assembler::mos6502::mos6502Assembler assembler{};
   listing.emplace_back("SEC");
-  listing.emplace_back("ADC #01");
+  listing.emplace_back("SED");
+  listing.emplace_back("SEI");
+  listing.emplace_back("CLC");
+  listing.emplace_back("CLI");
+  listing.emplace_back("CLD");
+  mem.set(assembler.assemble(listing));
+  cores::mos6502::mos6502 core{mem}; 
+  core.runCycle();
+  REQUIRE_SAME(1, core.getCarry());
+  core.runCycle();
+  REQUIRE_SAME(1, core.getDig());
+  core.runCycle();
+  REQUIRE_SAME(1, core.getInt());
+  core.runCycle();
+  REQUIRE_SAME(0, core.getCarry());
+  core.runCycle();
+  REQUIRE_SAME(0, core.getInt());
+  core.runCycle();
+  REQUIRE_SAME(0, core.getDig());
+}
+
+TEST_CASE("AND") {
+  LocalMem mem{};
+  std::vector<std::string> listing{};
+  assembler::mos6502::mos6502Assembler assembler{};
+  listing.emplace_back("LDA #10");
+  listing.emplace_back("AND #10");
+  listing.emplace_back("AND #00");
   mem.set(assembler.assemble(listing));
   cores::mos6502::mos6502 core{mem}; 
   core.runCycle();
   core.runCycle();
-  REQUIRE_SAME(0x2, core.getAcc());
+  REQUIRE_SAME(0x10, core.getAcc());
+  core.runCycle();
+  REQUIRE_SAME(0x00, core.getAcc());
+  REQUIRE_SAME(0x1, core.getZero());
 }
