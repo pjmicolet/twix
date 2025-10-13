@@ -99,6 +99,7 @@ TEST_CASE("Test SDX") {
   std::vector<uint8_t> bank{0,0,0,0,0,0,0,0,0,0}; // 10 slots
   listing.emplace_back("STX $00");
   listing.emplace_back("STX $01,Y");
+  listing.emplace_back("STX $0003");
   auto code = assembler.assemble(listing);
   bank.insert(bank.end(), code.begin(), code.end());
   mem.set(bank);
@@ -109,8 +110,10 @@ TEST_CASE("Test SDX") {
   core.setX(0x12);
   core.setY(0x1);
   core.runCycle();
-  auto dumpInfo = [=]() mutable { return mem.dump(); };
-  REQUIRE_SAME_VERBOSE(0x12, mem.load(0x2), dumpInfo);
+  REQUIRE_SAME(0x12, mem.load(0x2));
+  core.setX(0x22);
+  core.runCycle();
+  REQUIRE_SAME(0x22, mem.load(0x3));
 }
 
 TEST_CASE("Test ADC") {
