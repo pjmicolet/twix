@@ -20,8 +20,8 @@ namespace mos6502 {
 template<typename Memory = cores::testMem> requires cores::MemoryComponent<Memory>
 struct mos6502 {
 #define INST(AddrMode, MemOp, Operation) AddrMode::execute<MemOp>(*this,&mos6502::Operation);
-#define DEFINE_INST(OpCode, AddrMode, Operation) case(OpCode) : { INST(AddrMode, MemoryAction::IsLoad, Operation) break ;};
-#define DEFINE_STORE_INST(OpCode, AddrMode, Operation) case(OpCode) : { INST(AddrMode, MemoryAction::IsStore, Operation) break ;};
+#define DEFINE_VALUE_INST(OpCode, AddrMode, Operation) case(OpCode) : { INST(AddrMode, MemoryAction::IsLoad, Operation) break ;};
+#define DEFINE_ADDRESS_INST(OpCode, AddrMode, Operation) case(OpCode) : { INST(AddrMode, MemoryAction::IsStore, Operation) break ;};
 
     mos6502() {};
     mos6502(Memory& mem) : mem_component(mem) {
@@ -578,194 +578,194 @@ public:
     auto runCycle() -> void {
       switch(mem_component.load(R.PC)) {
         //memory
-        DEFINE_INST(0xA9, ImmediateMode, lda)
-        DEFINE_INST(0xA5, ZP, lda)
-        DEFINE_INST(0xB5, ZPX, lda)
-        DEFINE_INST(0xAD, AbsAddress, lda)
-        DEFINE_INST(0xBD, AbsX, lda)
-        DEFINE_INST(0xB9, AbsY, lda)
+        DEFINE_VALUE_INST(0xA9, ImmediateMode, lda)
+        DEFINE_VALUE_INST(0xA5, ZP, lda)
+        DEFINE_VALUE_INST(0xB5, ZPX, lda)
+        DEFINE_VALUE_INST(0xAD, AbsAddress, lda)
+        DEFINE_VALUE_INST(0xBD, AbsX, lda)
+        DEFINE_VALUE_INST(0xB9, AbsY, lda)
 
-        DEFINE_INST(0xA2, ImmediateMode, ldx)
-        DEFINE_INST(0xA6, ZP, ldx)
-        DEFINE_INST(0xB6, ZPY, ldx)
-        DEFINE_INST(0xAE, AbsAddress, ldx)
-        DEFINE_INST(0xBE, AbsY, ldx)
+        DEFINE_VALUE_INST(0xA2, ImmediateMode, ldx)
+        DEFINE_VALUE_INST(0xA6, ZP, ldx)
+        DEFINE_VALUE_INST(0xB6, ZPY, ldx)
+        DEFINE_VALUE_INST(0xAE, AbsAddress, ldx)
+        DEFINE_VALUE_INST(0xBE, AbsY, ldx)
 
-        DEFINE_INST(0xA0, ImmediateMode, ldy)
-        DEFINE_INST(0xA4, ZP, ldy)
-        DEFINE_INST(0xB4, ZPX, ldy)
-        DEFINE_INST(0xAC, AbsAddress, ldy)
-        DEFINE_INST(0xBC, AbsX, ldy)
+        DEFINE_VALUE_INST(0xA0, ImmediateMode, ldy)
+        DEFINE_VALUE_INST(0xA4, ZP, ldy)
+        DEFINE_VALUE_INST(0xB4, ZPX, ldy)
+        DEFINE_VALUE_INST(0xAC, AbsAddress, ldy)
+        DEFINE_VALUE_INST(0xBC, AbsX, ldy)
 
-        DEFINE_STORE_INST(0x85, ZP, sta);
-        DEFINE_STORE_INST(0x95, ZPX, sta);
-        DEFINE_STORE_INST(0x8D, AbsAddress, sta);
-        DEFINE_STORE_INST(0x9D, AbsX, sta);
-        DEFINE_STORE_INST(0x99, AbsY, sta);
-        DEFINE_STORE_INST(0x81, IndX, sta);
-        DEFINE_STORE_INST(0x91, IndY, sta);
+        DEFINE_ADDRESS_INST(0x85, ZP, sta);
+        DEFINE_ADDRESS_INST(0x95, ZPX, sta);
+        DEFINE_ADDRESS_INST(0x8D, AbsAddress, sta);
+        DEFINE_ADDRESS_INST(0x9D, AbsX, sta);
+        DEFINE_ADDRESS_INST(0x99, AbsY, sta);
+        DEFINE_ADDRESS_INST(0x81, IndX, sta);
+        DEFINE_ADDRESS_INST(0x91, IndY, sta);
 
-        DEFINE_STORE_INST(0x86, ZP, stx);
-        DEFINE_STORE_INST(0x96, ZPY, stx);
-        DEFINE_STORE_INST(0x8E, AbsAddress, stx);
+        DEFINE_ADDRESS_INST(0x86, ZP, stx);
+        DEFINE_ADDRESS_INST(0x96, ZPY, stx);
+        DEFINE_ADDRESS_INST(0x8E, AbsAddress, stx);
 
-        DEFINE_STORE_INST(0x84, ZP, sty);
-        DEFINE_STORE_INST(0x92, ZPY, sty);
-        DEFINE_STORE_INST(0x8C, AbsAddress, sty);
+        DEFINE_ADDRESS_INST(0x84, ZP, sty);
+        DEFINE_ADDRESS_INST(0x92, ZPY, sty);
+        DEFINE_ADDRESS_INST(0x8C, AbsAddress, sty);
 
 //arithmetic
-        DEFINE_INST(0x69, ImmediateMode, adc)
-        DEFINE_INST(0x65, ZP, adc)
-        DEFINE_INST(0x75, ZPX, adc)
-        DEFINE_INST(0x6D, AbsAddress, adc)
-        DEFINE_INST(0x7D, AbsX, adc)
-        DEFINE_INST(0x79, AbsY, adc)
-        DEFINE_INST(0x61, IndX, adc)
-        DEFINE_INST(0x71, IndY, adc)
+        DEFINE_VALUE_INST(0x69, ImmediateMode, adc)
+        DEFINE_VALUE_INST(0x65, ZP, adc)
+        DEFINE_VALUE_INST(0x75, ZPX, adc)
+        DEFINE_VALUE_INST(0x6D, AbsAddress, adc)
+        DEFINE_VALUE_INST(0x7D, AbsX, adc)
+        DEFINE_VALUE_INST(0x79, AbsY, adc)
+        DEFINE_VALUE_INST(0x61, IndX, adc)
+        DEFINE_VALUE_INST(0x71, IndY, adc)
 
-        DEFINE_INST(0xE9, ImmediateMode, sbc)
-        DEFINE_INST(0xE5, ZP, sbc)
-        DEFINE_INST(0xF5, ZPX, sbc)
-        DEFINE_INST(0xED, AbsAddress, sbc)
-        DEFINE_INST(0xFD, AbsX, sbc)
-        DEFINE_INST(0xF9, AbsY, sbc)
-        DEFINE_INST(0xE1, IndX, sbc)
-        DEFINE_INST(0xF1, IndY, sbc)
+        DEFINE_VALUE_INST(0xE9, ImmediateMode, sbc)
+        DEFINE_VALUE_INST(0xE5, ZP, sbc)
+        DEFINE_VALUE_INST(0xF5, ZPX, sbc)
+        DEFINE_VALUE_INST(0xED, AbsAddress, sbc)
+        DEFINE_VALUE_INST(0xFD, AbsX, sbc)
+        DEFINE_VALUE_INST(0xF9, AbsY, sbc)
+        DEFINE_VALUE_INST(0xE1, IndX, sbc)
+        DEFINE_VALUE_INST(0xF1, IndY, sbc)
 
-        DEFINE_INST(0x18, Implied, clc)
-        DEFINE_INST(0xD8, Implied, cld)
-        DEFINE_INST(0x58, Implied, cli)
-        DEFINE_INST(0xB8, Implied, clv)
+        DEFINE_VALUE_INST(0x18, Implied, clc)
+        DEFINE_VALUE_INST(0xD8, Implied, cld)
+        DEFINE_VALUE_INST(0x58, Implied, cli)
+        DEFINE_VALUE_INST(0xB8, Implied, clv)
 
-        DEFINE_INST(0x38, Implied, sec)
-        DEFINE_INST(0xF8, Implied, sed)
-        DEFINE_INST(0x78, Implied, sei)
+        DEFINE_VALUE_INST(0x38, Implied, sec)
+        DEFINE_VALUE_INST(0xF8, Implied, sed)
+        DEFINE_VALUE_INST(0x78, Implied, sei)
 //Logical
 
-        DEFINE_INST(0x29, ImmediateMode, and_op)
-        DEFINE_INST(0x25, ZP, and_op)
-        DEFINE_INST(0x35, ZPX, and_op)
-        DEFINE_INST(0x2D, AbsAddress, and_op)
-        DEFINE_INST(0x3D, AbsX, and_op)
-        DEFINE_INST(0x39, AbsY, and_op)
-        DEFINE_INST(0x21, IndX, and_op)
-        DEFINE_INST(0x31, IndY, and_op)
+        DEFINE_VALUE_INST(0x29, ImmediateMode, and_op)
+        DEFINE_VALUE_INST(0x25, ZP, and_op)
+        DEFINE_VALUE_INST(0x35, ZPX, and_op)
+        DEFINE_VALUE_INST(0x2D, AbsAddress, and_op)
+        DEFINE_VALUE_INST(0x3D, AbsX, and_op)
+        DEFINE_VALUE_INST(0x39, AbsY, and_op)
+        DEFINE_VALUE_INST(0x21, IndX, and_op)
+        DEFINE_VALUE_INST(0x31, IndY, and_op)
 
-        DEFINE_INST(0x49, ImmediateMode, eor_op)
-        DEFINE_INST(0x45, ZP, eor_op)
-        DEFINE_INST(0x55, ZPX, eor_op)
-        DEFINE_INST(0x4D, AbsAddress, eor_op)
-        DEFINE_INST(0x5D, AbsX, eor_op)
-        DEFINE_INST(0x59, AbsY, eor_op)
-        DEFINE_INST(0x41, IndX, eor_op)
-        DEFINE_INST(0x51, IndY, eor_op)
+        DEFINE_VALUE_INST(0x49, ImmediateMode, eor_op)
+        DEFINE_VALUE_INST(0x45, ZP, eor_op)
+        DEFINE_VALUE_INST(0x55, ZPX, eor_op)
+        DEFINE_VALUE_INST(0x4D, AbsAddress, eor_op)
+        DEFINE_VALUE_INST(0x5D, AbsX, eor_op)
+        DEFINE_VALUE_INST(0x59, AbsY, eor_op)
+        DEFINE_VALUE_INST(0x41, IndX, eor_op)
+        DEFINE_VALUE_INST(0x51, IndY, eor_op)
 
-        DEFINE_INST(0x09, ImmediateMode, ora_op)
-        DEFINE_INST(0x05, ZP, ora_op)
-        DEFINE_INST(0x15, ZPX, ora_op)
-        DEFINE_INST(0x0D, AbsAddress, ora_op)
-        DEFINE_INST(0x1D, AbsX, ora_op)
-        DEFINE_INST(0x19, AbsY, ora_op)
-        DEFINE_INST(0x01, IndX, ora_op)
-        DEFINE_INST(0x11, IndY, ora_op)
+        DEFINE_VALUE_INST(0x09, ImmediateMode, ora_op)
+        DEFINE_VALUE_INST(0x05, ZP, ora_op)
+        DEFINE_VALUE_INST(0x15, ZPX, ora_op)
+        DEFINE_VALUE_INST(0x0D, AbsAddress, ora_op)
+        DEFINE_VALUE_INST(0x1D, AbsX, ora_op)
+        DEFINE_VALUE_INST(0x19, AbsY, ora_op)
+        DEFINE_VALUE_INST(0x01, IndX, ora_op)
+        DEFINE_VALUE_INST(0x11, IndY, ora_op)
 
-        DEFINE_INST(0x24, ZP, bit)
-        DEFINE_INST(0x2C, AbsAddress, bit)
+        DEFINE_VALUE_INST(0x24, ZP, bit)
+        DEFINE_VALUE_INST(0x2C, AbsAddress, bit)
 
 //Comparisons
-        DEFINE_INST(0xC9, ImmediateMode, cmp)
-        DEFINE_INST(0xC5, ZP, cmp)
-        DEFINE_INST(0xD5, ZPX, cmp)
-        DEFINE_INST(0xCD, AbsAddress, cmp)
-        DEFINE_INST(0xDD, AbsX, cmp)
-        DEFINE_INST(0xD9, AbsY, cmp)
-        DEFINE_INST(0xC1, IndX, cmp)
-        DEFINE_INST(0xD1, IndY, cmp)
+        DEFINE_VALUE_INST(0xC9, ImmediateMode, cmp)
+        DEFINE_VALUE_INST(0xC5, ZP, cmp)
+        DEFINE_VALUE_INST(0xD5, ZPX, cmp)
+        DEFINE_VALUE_INST(0xCD, AbsAddress, cmp)
+        DEFINE_VALUE_INST(0xDD, AbsX, cmp)
+        DEFINE_VALUE_INST(0xD9, AbsY, cmp)
+        DEFINE_VALUE_INST(0xC1, IndX, cmp)
+        DEFINE_VALUE_INST(0xD1, IndY, cmp)
 
-        DEFINE_INST(0xE0, ImmediateMode, cpx)
-        DEFINE_INST(0xE4, ZP, cpx)
-        DEFINE_INST(0xEC, AbsAddress, cpx)
+        DEFINE_VALUE_INST(0xE0, ImmediateMode, cpx)
+        DEFINE_VALUE_INST(0xE4, ZP, cpx)
+        DEFINE_VALUE_INST(0xEC, AbsAddress, cpx)
 
-        DEFINE_INST(0xC0, ImmediateMode, cpy)
-        DEFINE_INST(0xC4, ZP, cpy)
-        DEFINE_INST(0xCC, AbsAddress, cpy)
+        DEFINE_VALUE_INST(0xC0, ImmediateMode, cpy)
+        DEFINE_VALUE_INST(0xC4, ZP, cpy)
+        DEFINE_VALUE_INST(0xCC, AbsAddress, cpy)
 
 //Increment/Decrement
-        DEFINE_STORE_INST(0xE6, ZP, inc)
-        DEFINE_STORE_INST(0xF6, ZPX, inc)
-        DEFINE_STORE_INST(0xEE, AbsAddress, inc)
-        DEFINE_STORE_INST(0xFE, AbsX, inc)
+        DEFINE_ADDRESS_INST(0xE6, ZP, inc)
+        DEFINE_ADDRESS_INST(0xF6, ZPX, inc)
+        DEFINE_ADDRESS_INST(0xEE, AbsAddress, inc)
+        DEFINE_ADDRESS_INST(0xFE, AbsX, inc)
 
-        DEFINE_INST(0xE8, Implied, inx)
-        DEFINE_INST(0xC8, Implied, iny)
+        DEFINE_VALUE_INST(0xE8, Implied, inx)
+        DEFINE_VALUE_INST(0xC8, Implied, iny)
 
-        DEFINE_STORE_INST(0xC6, ZP, dec)
-        DEFINE_STORE_INST(0xD6, ZPX, dec)
-        DEFINE_STORE_INST(0xCE, AbsAddress, dec)
-        DEFINE_STORE_INST(0xDE, AbsX, dec)
+        DEFINE_ADDRESS_INST(0xC6, ZP, dec)
+        DEFINE_ADDRESS_INST(0xD6, ZPX, dec)
+        DEFINE_ADDRESS_INST(0xCE, AbsAddress, dec)
+        DEFINE_ADDRESS_INST(0xDE, AbsX, dec)
 
-        DEFINE_INST(0xCA, Implied, dex)
-        DEFINE_INST(0x88, Implied, dey)
+        DEFINE_VALUE_INST(0xCA, Implied, dex)
+        DEFINE_VALUE_INST(0x88, Implied, dey)
 
 //Shifts and Rotates
-        DEFINE_INST(0x0A, Accumulator, asl_acc)
-        DEFINE_STORE_INST(0x06, ZP, asl_mem)
-        DEFINE_STORE_INST(0x16, ZPX, asl_mem)
-        DEFINE_STORE_INST(0x0E, AbsAddress, asl_mem)
-        DEFINE_STORE_INST(0x1E, AbsX, asl_mem)
+        DEFINE_VALUE_INST(0x0A, Accumulator, asl_acc)
+        DEFINE_ADDRESS_INST(0x06, ZP, asl_mem)
+        DEFINE_ADDRESS_INST(0x16, ZPX, asl_mem)
+        DEFINE_ADDRESS_INST(0x0E, AbsAddress, asl_mem)
+        DEFINE_ADDRESS_INST(0x1E, AbsX, asl_mem)
 
-        DEFINE_INST(0x4A, Accumulator, lsr_acc)
-        DEFINE_STORE_INST(0x46, ZP, lsr_mem)
-        DEFINE_STORE_INST(0x56, ZPX, lsr_mem)
-        DEFINE_STORE_INST(0x4E, AbsAddress, lsr_mem)
-        DEFINE_STORE_INST(0x5E, AbsX, lsr_mem)
+        DEFINE_VALUE_INST(0x4A, Accumulator, lsr_acc)
+        DEFINE_ADDRESS_INST(0x46, ZP, lsr_mem)
+        DEFINE_ADDRESS_INST(0x56, ZPX, lsr_mem)
+        DEFINE_ADDRESS_INST(0x4E, AbsAddress, lsr_mem)
+        DEFINE_ADDRESS_INST(0x5E, AbsX, lsr_mem)
 
-        DEFINE_INST(0x2A, Accumulator, rol_acc)
-        DEFINE_STORE_INST(0x26, ZP, rol_mem)
-        DEFINE_STORE_INST(0x36, ZPX, rol_mem)
-        DEFINE_STORE_INST(0x2E, AbsAddress, rol_mem)
-        DEFINE_STORE_INST(0x3E, AbsX, rol_mem)
+        DEFINE_VALUE_INST(0x2A, Accumulator, rol_acc)
+        DEFINE_ADDRESS_INST(0x26, ZP, rol_mem)
+        DEFINE_ADDRESS_INST(0x36, ZPX, rol_mem)
+        DEFINE_ADDRESS_INST(0x2E, AbsAddress, rol_mem)
+        DEFINE_ADDRESS_INST(0x3E, AbsX, rol_mem)
 
-        DEFINE_INST(0x6A, Accumulator, ror_acc)
-        DEFINE_STORE_INST(0x66, ZP, ror_mem)
-        DEFINE_STORE_INST(0x76, ZPX, ror_mem)
-        DEFINE_STORE_INST(0x6E, AbsAddress, ror_mem)
-        DEFINE_STORE_INST(0x7E, AbsX, ror_mem)
+        DEFINE_VALUE_INST(0x6A, Accumulator, ror_acc)
+        DEFINE_ADDRESS_INST(0x66, ZP, ror_mem)
+        DEFINE_ADDRESS_INST(0x76, ZPX, ror_mem)
+        DEFINE_ADDRESS_INST(0x6E, AbsAddress, ror_mem)
+        DEFINE_ADDRESS_INST(0x7E, AbsX, ror_mem)
 
 //Branches
-        DEFINE_INST(0x90, Relative, bcc)
-        DEFINE_INST(0xB0, Relative, bcs)
-        DEFINE_INST(0xF0, Relative, beq)
-        DEFINE_INST(0x30, Relative, bmi)
-        DEFINE_INST(0xD0, Relative, bne)
-        DEFINE_INST(0x10, Relative, bpl)
-        DEFINE_INST(0x50, Relative, bvc)
-        DEFINE_INST(0x70, Relative, bvs)
+        DEFINE_VALUE_INST(0x90, Relative, bcc)
+        DEFINE_VALUE_INST(0xB0, Relative, bcs)
+        DEFINE_VALUE_INST(0xF0, Relative, beq)
+        DEFINE_VALUE_INST(0x30, Relative, bmi)
+        DEFINE_VALUE_INST(0xD0, Relative, bne)
+        DEFINE_VALUE_INST(0x10, Relative, bpl)
+        DEFINE_VALUE_INST(0x50, Relative, bvc)
+        DEFINE_VALUE_INST(0x70, Relative, bvs)
 
 //Transfers
-        DEFINE_INST(0xAA, Implied, tax)
-        DEFINE_INST(0xA8, Implied, tay)
-        DEFINE_INST(0xBA, Implied, tsx)
-        DEFINE_INST(0x8A, Implied, txa)
-        DEFINE_INST(0x9A, Implied, txs)
-        DEFINE_INST(0x98, Implied, tya)
+        DEFINE_VALUE_INST(0xAA, Implied, tax)
+        DEFINE_VALUE_INST(0xA8, Implied, tay)
+        DEFINE_VALUE_INST(0xBA, Implied, tsx)
+        DEFINE_VALUE_INST(0x8A, Implied, txa)
+        DEFINE_VALUE_INST(0x9A, Implied, txs)
+        DEFINE_VALUE_INST(0x98, Implied, tya)
 
 //Stack Operations
-        DEFINE_INST(0x48, Implied, pha)
-        DEFINE_INST(0x08, Implied, php)
-        DEFINE_INST(0x68, Implied, pla)
-        DEFINE_INST(0x28, Implied, plp)
+        DEFINE_VALUE_INST(0x48, Implied, pha)
+        DEFINE_VALUE_INST(0x08, Implied, php)
+        DEFINE_VALUE_INST(0x68, Implied, pla)
+        DEFINE_VALUE_INST(0x28, Implied, plp)
 
 //Jumps and Calls
-        DEFINE_STORE_INST(0x4C, AbsAddress, jmp)
-        DEFINE_STORE_INST(0x6C, Indirect, jmp)
-        DEFINE_STORE_INST(0x20, AbsAddress, jsr)
-        DEFINE_INST(0x60, Implied, rts)
-        DEFINE_INST(0x40, Implied, rti)
-        DEFINE_INST(0x00, Implied, brk)
+        DEFINE_ADDRESS_INST(0x4C, AbsAddress, jmp)
+        DEFINE_ADDRESS_INST(0x6C, Indirect, jmp)
+        DEFINE_ADDRESS_INST(0x20, AbsAddress, jsr)
+        DEFINE_VALUE_INST(0x60, Implied, rts)
+        DEFINE_VALUE_INST(0x40, Implied, rti)
+        DEFINE_VALUE_INST(0x00, Implied, brk)
 
 //NOP
-        DEFINE_INST(0xEA, Implied, nop)
+        DEFINE_VALUE_INST(0xEA, Implied, nop)
     };
       nextByte();
     };
