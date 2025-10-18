@@ -757,9 +757,9 @@ public:
         DEFINE_INST(0x28, Implied, plp)
 
 //Jumps and Calls
-        DEFINE_INST(0x4C, AbsAddress, jmp)
-        DEFINE_INST(0x6C, Indirect, jmp)
-        DEFINE_INST(0x20, AbsAddress, jsr)
+        DEFINE_STORE_INST(0x4C, AbsAddress, jmp)
+        DEFINE_STORE_INST(0x6C, Indirect, jmp)
+        DEFINE_STORE_INST(0x20, AbsAddress, jsr)
         DEFINE_INST(0x60, Implied, rts)
         DEFINE_INST(0x40, Implied, rti)
         DEFINE_INST(0x00, Implied, brk)
