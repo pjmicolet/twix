@@ -21,6 +21,8 @@ namespace mos6502 {
   // It's pretty easy on the 6502 as all arithmetic and logical functions are applied to a single register (accumulator).
 template<typename Memory = cores::testMem> requires cores::MemoryComponent<Memory>
 struct mos6502 {
+  template<typename M>
+  friend auto printInstruction(const mos6502<M>& cpu) -> void;
 #define INST(AddrMode, MemOp, Operation) AddrMode::execute<MemOp>(*this,&mos6502::Operation);
 
 #ifdef NDEBUG
