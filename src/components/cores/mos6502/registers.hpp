@@ -1,5 +1,10 @@
 #pragma once
+#if __cpp_lib_print >= 202207L
 #include <print>
+#else
+#include <iostream>
+#include <format>
+#endif
 
 namespace cores {
 namespace mos6502 {

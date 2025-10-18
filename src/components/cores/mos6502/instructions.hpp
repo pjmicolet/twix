@@ -3,13 +3,18 @@
 #include "memory.hpp"
 #include "registers.hpp"
 #include <type_traits>
+#if __cpp_lib_print >= 202207L
 #include <print>
+#else
+#include <iostream>
+#include <format>
+#endif
 #include "addressing_modes.hpp"
 
 namespace cores {
 namespace mos6502 {
   // I basically had a quick look at different emulators, but mainly higen and also some cpp video about fast dispatch.
-  // A lot of times I've tried doing this by defining functions with the inputs and then storing state, this time I want to try something similar to higen where 
+  // A lot of times I've tried doing this by defining functions with the inputs and then storing state, this time I want to try something similar to higen where
   // it's the addressing modes that apply a function
   // It's pretty easy on the 6502 as all arithmetic and logical functions are applied to a single register (accumulator).
 template<typename Memory = cores::testMem> requires cores::MemoryComponent<Memory>
@@ -32,7 +37,11 @@ struct mos6502 {
     }
 
     auto showState() -> void {
+#if __cpp_lib_print >= 202207L
       std::print("{}\n", R);
+#else
+      std::cout << std::format("{}\n", R);
+#endif
     }
 
     auto nextByte() -> uint16_t {
@@ -184,10 +193,10 @@ public:
     mem_component.store(m, R.Y);
     return 2;
   }
-    
+
 //Shifts
   auto asl(uint8_t addr) -> void {
-    addr <<= 2; 
+    addr <<= 2;
   }
 
 //Logical
@@ -259,8 +268,8 @@ public:
         DEFINE_STORE_INST(0x84, ZP, sty);
         DEFINE_STORE_INST(0x92, ZPY, sty);
         DEFINE_STORE_INST(0x8C, AbsAddress, sty);
-      
-//arithmetic 
+
+//arithmetic
         DEFINE_INST(0x69, ImmediateMode, adc)
         DEFINE_INST(0x65, ZP, adc)
         DEFINE_INST(0x75, ZPX, adc)
