@@ -19,6 +19,7 @@ namespace mos6502 {
 			uint8_t N = 0;
 		};
 		uint16_t PC = 0;
+		uint8_t SP = 0xFF;
 		uint8_t ACC = 0;
 		uint8_t X = 0;
 		uint8_t Y = 0;
@@ -32,6 +33,7 @@ namespace mos6502 {
     }
     auto reset() -> void {
        PC = 0;
+       SP = 0xFF;
        ACC = 0;
        X = 0;
        Y = 0;
@@ -56,8 +58,9 @@ struct std::formatter<cores::mos6502::Registers> {
 	auto format(const cores::mos6502::Registers& r, std::format_context& ctx) const {
 		return std::format_to(
 			ctx.out(),
-			"PC: {:x}, ACC: {:x}, X: {:x}, Y: {:x}, Status:[C:{:x}, Z:{:x}, I:{:x}, D:{:x}, B:{:x}, O:{:x}, N:{:x}]",
+			"PC: {:x}, SP: {:x}, ACC: {:x}, X: {:x}, Y: {:x}, Status:[C:{:x}, Z:{:x}, I:{:x}, D:{:x}, B:{:x}, O:{:x}, N:{:x}]",
 			r.PC,
+			r.SP,
 			r.ACC,
 			r.X, r.Y, r.Status.C, r.Status.Z, r.Status.I, r.Status.D,
 			r.Status.B, r.Status.O, r.Status.N

@@ -15,7 +15,7 @@ enum MemoryAction {
 struct Implied {
     template <MemoryAction m, typename CPU, typename Input>
     static auto execute(CPU& cpu, uint64_t(CPU::*instruction)(Input)) -> uint64_t {
-      return (cpu.*instruction)(0);
+      return 2 + (cpu.*instruction)(0);
     }
 };
 
@@ -23,7 +23,7 @@ struct ImmediateMode {
     template <MemoryAction m, typename CPU, typename Input>
     static auto execute(CPU& cpu, uint64_t(CPU::*instruction)(Input)) -> uint64_t {
       uint8_t mem = cpu.load(cpu.nextByte());
-      return 3 + (cpu.*instruction)(mem);
+      return 2 + (cpu.*instruction)(mem);
     }
 };
 
@@ -33,9 +33,9 @@ struct ZPX {
       uint16_t mem = static_cast<uint16_t>(cpu.getX() + cpu.load(cpu.nextByte()))&0xFF;
       if constexpr(m == IsLoad) {
         uint8_t data = cpu.load(mem);
-        return 3 + (cpu.*instruction)(data);
+        return 4 + (cpu.*instruction)(data);
       } else {
-        return 3 + (cpu.*instruction)(mem);
+        return 4 + (cpu.*instruction)(mem);
       }
     }
 };
@@ -46,9 +46,9 @@ struct ZPY {
       uint16_t mem = static_cast<uint16_t>(cpu.getY() + cpu.load(cpu.nextByte()))&0xFF;
       if constexpr(m == IsLoad) {
         uint8_t data = cpu.load(mem);
-        return 3 + (cpu.*instruction)(data);
+        return 4 + (cpu.*instruction)(data);
       } else {
-        return 3 + (cpu.*instruction)(mem);
+        return 4 + (cpu.*instruction)(mem);
       }
     }
 };
@@ -73,9 +73,9 @@ struct AbsAddress {
       auto highByte = cpu.load(cpu.nextByte());
       if constexpr(m == IsLoad) {
         auto data = cpu.load((highByte << 8) | lowByte);
-        return 3 + (cpu.*instruction)(data);
+        return 4 + (cpu.*instruction)(data);
       } else {
-        return 3 + (cpu.*instruction)((highByte << 8) | lowByte);
+        return 4 + (cpu.*instruction)((highByte << 8) | lowByte);
       }
     }
 };
@@ -88,9 +88,9 @@ struct AbsX {
       auto addr = ((highByte << 8) | lowByte) + cpu.getX();
       if constexpr(m == IsLoad){
         auto data = cpu.load(addr);
-        return 3 + (cpu.*instruction)(data);
+        return 4 + (cpu.*instruction)(data);
       } else {
-        return 3 + (cpu.*instruction)(addr);
+        return 5 + (cpu.*instruction)(addr);
       }
     }
 };
@@ -103,9 +103,9 @@ struct AbsY {
       auto addr = ((highByte << 8) | lowByte) + cpu.getY();
       if constexpr(m == IsLoad) {
         auto data = cpu.load(addr);
-        return 3 + (cpu.*instruction)(data);
+        return 4 + (cpu.*instruction)(data);
       } else {
-        return 3 + (cpu.*instruction)(addr);
+        return 5 + (cpu.*instruction)(addr);
       }
     }
 };
@@ -117,12 +117,12 @@ struct IndX {
       auto wrappedLow = (pageByte + cpu.getX()) & 0xFF;
       auto lowByte = cpu.load(wrappedLow);
       auto highByte = cpu.load(wrappedLow+1);
-      auto addr = ((highByte << 8) | lowByte) + cpu.getY();
+      auto addr = (highByte << 8) | lowByte;
       if constexpr(m == IsLoad) {
         auto data = cpu.load(addr);
-        return 3 + (cpu.*instruction)(data);
+        return 6 + (cpu.*instruction)(data);
       } else {
-        return 3 + (cpu.*instruction)(addr);
+        return 6 + (cpu.*instruction)(addr);
       }
     }
 };
@@ -136,9 +136,37 @@ struct IndY {
       auto addr = ((highByte << 8) | lowByte) + cpu.getY();
       if constexpr(m == IsLoad) {
         auto data = cpu.load(addr);
-        return 3 + (cpu.*instruction)(data);
+        return 5 + (cpu.*instruction)(data);
       } else {
-        return 3 + (cpu.*instruction)(addr);
+        return 6 + (cpu.*instruction)(addr);
       }
+    }
+};
+
+struct Accumulator {
+    template <MemoryAction m, typename CPU, typename Input>
+    static auto execute(CPU& cpu, uint64_t(CPU::*instruction)(Input)) -> uint64_t {
+      return 2 + (cpu.*instruction)(0);
+    }
+};
+
+struct Relative {
+    template <MemoryAction m, typename CPU, typename Input>
+    static auto execute(CPU& cpu, uint64_t(CPU::*instruction)(Input)) -> uint64_t {
+      int8_t offset = static_cast<int8_t>(cpu.load(cpu.nextByte()));
+      return 2 + (cpu.*instruction)(offset);
+    }
+};
+
+struct Indirect {
+    template <MemoryAction m, typename CPU, typename Input>
+    static auto execute(CPU& cpu, uint64_t(CPU::*instruction)(Input)) -> uint64_t {
+      auto lowByte = cpu.load(cpu.nextByte());
+      auto highByte = cpu.load(cpu.nextByte());
+      auto ptrAddr = (highByte << 8) | lowByte;
+      auto targetLow = cpu.load(ptrAddr);
+      auto targetHigh = cpu.load(ptrAddr + 1);
+      auto targetAddr = (targetHigh << 8) | targetLow;
+      return 5 + (cpu.*instruction)(targetAddr);
     }
 };
