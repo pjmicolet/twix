@@ -10,6 +10,8 @@
 #include <format>
 #endif
 #include "addressing_modes.hpp"
+#include "cycle_table.hpp"
+#include <cassert>
 
 namespace cores {
 namespace mos6502 {
@@ -20,8 +22,24 @@ namespace mos6502 {
 template<typename Memory = cores::testMem> requires cores::MemoryComponent<Memory>
 struct mos6502 {
 #define INST(AddrMode, MemOp, Operation) AddrMode::execute<MemOp>(*this,&mos6502::Operation);
-#define DEFINE_VALUE_INST(OpCode, AddrMode, Operation) case(OpCode) : { INST(AddrMode, MemoryAction::IsLoad, Operation) break ;};
-#define DEFINE_ADDRESS_INST(OpCode, AddrMode, Operation) case(OpCode) : { INST(AddrMode, MemoryAction::IsStore, Operation) break ;};
+
+#ifdef NDEBUG
+  // Release build: no validation
+  #define DEFINE_VALUE_INST(OpCode, AddrMode, Operation) case(OpCode) : { INST(AddrMode, MemoryAction::IsLoad, Operation) break ;};
+  #define DEFINE_ADDRESS_INST(OpCode, AddrMode, Operation) case(OpCode) : { INST(AddrMode, MemoryAction::IsStore, Operation) break ;};
+#else
+  // Debug build: validate cycle counts
+  #define DEFINE_VALUE_INST(OpCode, AddrMode, Operation) case(OpCode) : { \
+    auto cycles = INST(AddrMode, MemoryAction::IsLoad, Operation) \
+    validateCycles(OpCode, cycles); \
+    break; \
+  };
+  #define DEFINE_ADDRESS_INST(OpCode, AddrMode, Operation) case(OpCode) : { \
+    auto cycles = INST(AddrMode, MemoryAction::IsStore, Operation) \
+    validateCycles(OpCode, cycles); \
+    break; \
+  };
+#endif
 
     mos6502() {};
     mos6502(Memory& mem) : mem_component(mem) {
@@ -113,6 +131,24 @@ struct mos6502 {
       R.Status.Z = (status >> 1) & 1;
       R.Status.C = status & 1;
     }
+
+#ifndef NDEBUG
+    // Cycle validation (debug builds only)
+    auto validateCycles(uint8_t opcode, uint64_t actual_cycles) -> void {
+      const auto& expected = CYCLE_TABLE[opcode];
+      // Check if cycles are within expected range
+      if (actual_cycles < expected.min || actual_cycles > expected.max) {
+        #if __cpp_lib_print >= 202207L
+          std::print(stderr, "Cycle count error for opcode 0x{:02X}: expected {}-{}, got {}\n",
+                     opcode, expected.min, expected.max, actual_cycles);
+        #else
+          std::cerr << std::format("Cycle count error for opcode 0x{:02X}: expected {}-{}, got {}\n",
+                                   opcode, expected.min, expected.max, actual_cycles);
+        #endif
+        assert(false && "Cycle count validation failed");
+      }
+    }
+#endif
 
 private:
     using fp = void (mos6502::*)(uint16_t);
@@ -402,64 +438,80 @@ public:
 //Branches
   auto bcc(int8_t offset) -> uint64_t {
      if (R.Status.C == 0) {
+       uint16_t oldPC = R.PC;
        R.PC += offset;
-       return 1;
+       bool pageCrossed = (oldPC & 0xFF00) != (R.PC & 0xFF00);
+       return 1 + pageCrossed;
      }
      return 0;
   }
 
   auto bcs(int8_t offset) -> uint64_t {
      if (R.Status.C != 0) {
+       uint16_t oldPC = R.PC;
        R.PC += offset;
-       return 1;
+       bool pageCrossed = (oldPC & 0xFF00) != (R.PC & 0xFF00);
+       return 1 + pageCrossed;
      }
      return 0;
   }
 
   auto beq(int8_t offset) -> uint64_t {
      if (R.Status.Z != 0) {
+       uint16_t oldPC = R.PC;
        R.PC += offset;
-       return 1;
+       bool pageCrossed = (oldPC & 0xFF00) != (R.PC & 0xFF00);
+       return 1 + pageCrossed;
      }
      return 0;
   }
 
   auto bmi(int8_t offset) -> uint64_t {
      if (R.Status.N != 0) {
+       uint16_t oldPC = R.PC;
        R.PC += offset;
-       return 1;
+       bool pageCrossed = (oldPC & 0xFF00) != (R.PC & 0xFF00);
+       return 1 + pageCrossed;
      }
      return 0;
   }
 
   auto bne(int8_t offset) -> uint64_t {
      if (R.Status.Z == 0) {
+       uint16_t oldPC = R.PC;
        R.PC += offset;
-       return 1;
+       bool pageCrossed = (oldPC & 0xFF00) != (R.PC & 0xFF00);
+       return 1 + pageCrossed;
      }
      return 0;
   }
 
   auto bpl(int8_t offset) -> uint64_t {
      if (R.Status.N == 0) {
+       uint16_t oldPC = R.PC;
        R.PC += offset;
-       return 1;
+       bool pageCrossed = (oldPC & 0xFF00) != (R.PC & 0xFF00);
+       return 1 + pageCrossed;
      }
      return 0;
   }
 
   auto bvc(int8_t offset) -> uint64_t {
      if (R.Status.O == 0) {
+       uint16_t oldPC = R.PC;
        R.PC += offset;
-       return 1;
+       bool pageCrossed = (oldPC & 0xFF00) != (R.PC & 0xFF00);
+       return 1 + pageCrossed;
      }
      return 0;
   }
 
   auto bvs(int8_t offset) -> uint64_t {
      if (R.Status.O != 0) {
+       uint16_t oldPC = R.PC;
        R.PC += offset;
-       return 1;
+       bool pageCrossed = (oldPC & 0xFF00) != (R.PC & 0xFF00);
+       return 1 + pageCrossed;
      }
      return 0;
   }
@@ -529,8 +581,15 @@ public:
   }
 
 //Jumps and Calls
-  auto jmp(uint16_t addr) -> uint64_t {
+  auto jmp_abs(uint16_t addr) -> uint64_t {
      R.PC = addr - 1;
+     // JMP Absolute takes 3 cycles total, AbsAddress adds 4, so we subtract 1
+     return -1;
+  }
+
+  auto jmp_ind(uint16_t addr) -> uint64_t {
+     R.PC = addr - 1;
+     // JMP Indirect takes 5 cycles total, Indirect adds 5, so we return 0
      return 0;
   }
 
@@ -757,8 +816,8 @@ public:
         DEFINE_VALUE_INST(0x28, Implied, plp)
 
 //Jumps and Calls
-        DEFINE_ADDRESS_INST(0x4C, AbsAddress, jmp)
-        DEFINE_ADDRESS_INST(0x6C, Indirect, jmp)
+        DEFINE_ADDRESS_INST(0x4C, AbsAddress, jmp_abs)
+        DEFINE_ADDRESS_INST(0x6C, Indirect, jmp_ind)
         DEFINE_ADDRESS_INST(0x20, AbsAddress, jsr)
         DEFINE_VALUE_INST(0x60, Implied, rts)
         DEFINE_VALUE_INST(0x40, Implied, rti)

@@ -85,10 +85,12 @@ struct AbsX {
     static auto execute(CPU& cpu, uint64_t(CPU::*instruction)(Input)) -> uint64_t {
       auto lowByte = cpu.load(cpu.nextByte());
       auto highByte = cpu.load(cpu.nextByte());
-      auto addr = ((highByte << 8) | lowByte) + cpu.getX();
+      auto baseAddr = (highByte << 8) | lowByte;
+      auto addr = baseAddr + cpu.getX();
+      bool pageCrossed = (baseAddr & 0xFF00) != (addr & 0xFF00);
       if constexpr(m == IsLoad){
         auto data = cpu.load(addr);
-        return 4 + (cpu.*instruction)(data);
+        return 4 + pageCrossed + (cpu.*instruction)(data);
       } else {
         return 5 + (cpu.*instruction)(addr);
       }
@@ -100,10 +102,12 @@ struct AbsY {
     static auto execute(CPU& cpu, uint64_t(CPU::*instruction)(Input)) -> uint64_t {
       auto lowByte = cpu.load(cpu.nextByte());
       auto highByte = cpu.load(cpu.nextByte());
-      auto addr = ((highByte << 8) | lowByte) + cpu.getY();
+      auto baseAddr = (highByte << 8) | lowByte;
+      auto addr = baseAddr + cpu.getY();
+      bool pageCrossed = (baseAddr & 0xFF00) != (addr & 0xFF00);
       if constexpr(m == IsLoad) {
         auto data = cpu.load(addr);
-        return 4 + (cpu.*instruction)(data);
+        return 4 + pageCrossed + (cpu.*instruction)(data);
       } else {
         return 5 + (cpu.*instruction)(addr);
       }
@@ -133,10 +137,12 @@ struct IndY {
       auto pageByte = cpu.load(cpu.nextByte());
       auto lowByte = cpu.load(pageByte);
       auto highByte = cpu.load(pageByte+1);
-      auto addr = ((highByte << 8) | lowByte) + cpu.getY();
+      auto baseAddr = (highByte << 8) | lowByte;
+      auto addr = baseAddr + cpu.getY();
+      bool pageCrossed = (baseAddr & 0xFF00) != (addr & 0xFF00);
       if constexpr(m == IsLoad) {
         auto data = cpu.load(addr);
-        return 5 + (cpu.*instruction)(data);
+        return 5 + pageCrossed + (cpu.*instruction)(data);
       } else {
         return 6 + (cpu.*instruction)(addr);
       }
