@@ -24,10 +24,7 @@ auto strSplit(const std::string_view strv, std::string_view delim /*=""*/)
 }
 
 auto isHex(const char &c) -> bool {
-  return (c >= 48 && c <= 57) ||
-         (c == 'A' || c == 'B' || c == 'C' || c == 'D' || c == 'E' ||
-          c == 'F') ||
-         (c == 'a' || c == 'b' || c == 'c' || c == 'd' || c == 'e' || c == 'f');
+  return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
 }
 
 /**
@@ -106,26 +103,25 @@ auto match(const std::string_view pattern, const std::string_view testString)
 
 // This is dirty but it will clear up the string and then create the int
 auto stringToInt(const std::string_view pattern) -> int {
-  bool foundYet = false;
   int res = 0;
-  std::string hex = "";
-  for (auto &c : pattern) {
-    if (!foundYet) {
-      if (isHex(c)) {
-        foundYet = true;
-        hex += c;
+  bool foundYet = false;
+  
+  for (const auto c : pattern) {
+    if (isHex(c)) {
+      foundYet = true;
+      res = res * 16;
+      if (c >= '0' && c <= '9') {
+        res += (c - '0');
+      } else if (c >= 'A' && c <= 'F') {
+        res += (c - 'A' + 10);
+      } else if (c >= 'a' && c <= 'f') {
+        res += (c - 'a' + 10);
       }
-    } else {
-      if (isHex(c)) {
-        hex += c;
-      } else {
-        break;
-      }
+    } else if (foundYet) {
+      break;
     }
   }
-  if (foundYet) {
-    res = std::stoi(hex, nullptr, 16);
-  }
+  
   return res;
 }
 
