@@ -92,3 +92,17 @@ target_link_libraries(mos6502_core_test_suite PUBLIC
     mos6502core
     mos6502
 )
+
+# MOS 6502 instruction logging demo
+add_executable(instruction_logging_demo
+    tests/components/cores/mos6502/instruction_logging_test.cpp
+)
+
+target_link_libraries(instruction_logging_demo PUBLIC
+    mos6502core
+    mos6502
+)
+
+target_include_directories(instruction_logging_demo PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/components
+)
