@@ -297,6 +297,12 @@ public:
         return data_;
     }
 
+    // this kind of sucks I should rewrite it...
+    auto loadFromPrg(uint16_t addr) const -> uint8_t {
+      auto address = addr - 0x8000;
+      return data_[address];
+    }
+
 private:
     INesHeader header_{};
     INesVersion version_{INesVersion::UNKNOWN};

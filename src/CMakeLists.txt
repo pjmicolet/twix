@@ -106,3 +106,16 @@ target_link_libraries(instruction_logging_demo PUBLIC
 target_include_directories(instruction_logging_demo PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/components
 )
+
+# ============================================================================
+# System Executables
+# ============================================================================
+
+add_executable(nes 
+    system/nes/nes.cpp
+)
+
+target_link_libraries(nes PUBLIC
+  mos6502core
+  mos6502
+)
