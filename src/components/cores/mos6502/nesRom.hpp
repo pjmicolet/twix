@@ -297,10 +297,14 @@ public:
         return data_;
     }
 
-    // this kind of sucks I should rewrite it...
-    auto loadFromPrg(uint16_t addr) const -> uint8_t {
-      auto address = addr - 0x8000;
-      return data_[address];
+    // Load from PRG ROM using offset into PRG ROM data (not CPU address)
+    // The mapper is responsible for translating CPU addresses to ROM offsets
+    auto loadFromPrg(size_t offset) const -> uint8_t {
+      if (offset >= header_.getPrgRomSize()) {
+        // Out of bounds, return 0
+        return 0;
+      }
+      return data_[prg_rom_offset_ + offset];
     }
 
 private:
