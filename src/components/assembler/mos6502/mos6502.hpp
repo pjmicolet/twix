@@ -62,8 +62,10 @@ struct OpType {
       disasmAddressing(res, result);
       return index + 2;
     }
-    case ParseType::NONE:
+    case ParseType::NONE: {
+      result.push_back(name_);
       return index;
+      }
     }
     return 0;
   }
