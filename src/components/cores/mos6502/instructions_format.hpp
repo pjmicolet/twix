@@ -26,16 +26,17 @@ auto printInstruction(const mos6502<Memory>& cpu) -> void {
   std::string instruction_str = "???";
   
   if (insts->contains(opcode)) {
+    auto numOfBytes = insts->getOpType(opcode);
     std::vector<assembler::mos6502::byte_type> bytes;
     bytes.push_back(opcode);
     
     uint16_t temp_pc = pc + 1;
     
-    if (temp_pc < 0x10000) {
+    if (temp_pc < 0x10000 && numOfBytes >= 1) {
       uint8_t byte1 = cpu.mem_component.load(temp_pc);
       bytes.push_back(byte1);
       
-      if (temp_pc + 1 < 0x10000) {
+      if (temp_pc + 1 < 0x10000 && numOfBytes == 2) {
         uint8_t byte2 = cpu.mem_component.load(temp_pc + 1);
         bytes.push_back(byte2);
       }

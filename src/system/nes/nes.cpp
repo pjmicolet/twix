@@ -7,10 +7,9 @@ int main(int argc, char** argv) {
   NesRAM<Mapper0> ram{rom};
   cores::mos6502::mos6502<NesRAM<Mapper0>> core{ram};
   core.setPC(0xC000);
-  cores::mos6502::printInstruction(core);
-  //while(true) {
-  //  cores::mos6502::printInstruction(core);
-  //  core.runCycle();
-  //}
+  while(true) {
+    cores::mos6502::printInstruction(core);
+    core.runCycle();
+  }
   return 0;
 }

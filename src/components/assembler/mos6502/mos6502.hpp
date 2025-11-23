@@ -70,6 +70,12 @@ struct OpType {
 
   auto setName(std::string name) { name_ = name; }
 
+  auto getNumOfBytes() -> int { 
+    if(parseType_ == ParseType::SINGLE) return 1;
+    if(parseType_ == ParseType::DOUBLE) return 2; 
+    return 0;
+  }
+
 private:
   Ops type_;
   uint8_t code_;
@@ -232,6 +238,8 @@ struct InstructionSet {
   auto at(const std::string &name) -> Inst & { return byName_.at(name); }
 
   auto at(byte_type op) -> OpType & { return *byOp_.at(op); }
+
+  auto getOpType(byte_type op) -> int { return byOp_.at(op)->getNumOfBytes(); }
 
 private:
   InstructionSet() {
